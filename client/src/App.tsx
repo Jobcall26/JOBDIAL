@@ -14,6 +14,9 @@ import ScriptsPage from "@/pages/scripts-page";
 import SupervisionPage from "@/pages/supervision-page";
 import CallHistoryPage from "@/pages/call-history-page";
 import SettingsPage from "@/pages/settings-page";
+import ContactsPage from "@/pages/contacts-page";
+import StatsPage from "@/pages/stats-page";
+import ReportsPage from "@/pages/reports-page";
 import { WebSocketProvider } from "@/hooks/use-websocket";
 import { SoftphoneProvider } from "@/hooks/use-softphone";
 import { useEffect, useState } from "react";
@@ -69,9 +72,12 @@ function Router() {
       <ProtectedRoute path="/softphone" component={SoftphonePage} />
       <ProtectedRoute path="/agents" component={AgentsPage} />
       <ProtectedRoute path="/campaigns" component={CampaignsPage} />
+      <ProtectedRoute path="/contacts" component={ContactsPage} />
       <ProtectedRoute path="/scripts" component={ScriptsPage} />
       <ProtectedRoute path="/supervision" component={SupervisionPage} />
       <ProtectedRoute path="/history" component={CallHistoryPage} />
+      <ProtectedRoute path="/stats" component={StatsPage} />
+      <ProtectedRoute path="/reports" component={ReportsPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
