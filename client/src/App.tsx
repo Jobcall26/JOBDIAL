@@ -43,8 +43,9 @@ function WelcomeHandler() {
     }
   }, [user, initialAuth]);
   
+  // Utilisation de mode="wait" pour s'assurer que l'animation est complètement terminée
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait" onExitComplete={() => console.log("Animation complètement terminée")}>
       {showWelcome && <WelcomeAnimation />}
     </AnimatePresence>
   );

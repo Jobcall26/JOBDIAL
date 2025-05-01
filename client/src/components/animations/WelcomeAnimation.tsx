@@ -11,6 +11,7 @@ export default function WelcomeAnimation() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }} // Animation plus rapide
+      key="welcome-animation" // Clé unique pour aider AnimatePresence à tracker l'élément
     >
       <motion.div 
         className="relative"
