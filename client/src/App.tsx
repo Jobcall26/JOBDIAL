@@ -32,10 +32,10 @@ function WelcomeHandler() {
       setInitialAuth(false);
       setShowWelcome(true);
       
-      // Effacer l'animation après un délai
+      // Effacer l'animation après un délai plus long
       const timer = setTimeout(() => {
         setShowWelcome(false);
-      }, 4000);
+      }, 8000); // Augmenté à 8 secondes pour permettre une meilleure expérience
       
       return () => clearTimeout(timer);
     } else if (user) {
