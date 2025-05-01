@@ -39,6 +39,13 @@ export interface IStorage {
   getCampaign(id: number): Promise<any | undefined>;
   createCampaign(campaign: any): Promise<any>;
   
+  // Contact/Lead management
+  getContacts(page: number, limit: number, search: string, campaignId?: number, status?: string): Promise<{ contacts: any[], total: number }>;
+  getContact(id: number): Promise<any | undefined>;
+  createContact(contact: any): Promise<any>;
+  updateContact(id: number, contact: any): Promise<any>;
+  getContactFilterOptions(): Promise<any>;
+  
   // Script management
   getScripts(page: number, limit: number, search: string): Promise<{ scripts: any[], total: number }>;
   getScriptsList(): Promise<any[]>;
@@ -62,8 +69,12 @@ export interface IStorage {
   ): Promise<{ calls: any[], total: number }>;
   getCallFilterOptions(): Promise<any>;
   
-  // Statistics
+  // Statistics & Reports
   getDashboardStats(): Promise<any>;
+  getPerformanceReport(period: string, agentId?: number, campaignId?: number): Promise<any>;
+  getCampaignsReport(period: string): Promise<any>;
+  getConversionReport(period: string, agentId?: number, campaignId?: number): Promise<any>;
+  getActivityReport(dateFrom: string, dateTo: string, agentId?: number): Promise<any>;
   
   // Supervision
   getSupervisionData(): Promise<any>;
@@ -296,6 +307,266 @@ class DatabaseStorage implements IStorage {
     
     // For now, just log it
     console.log(`Agent ${agentId} status updated to ${status}`);
+  }
+  
+  // Contact/Lead management
+  async getContacts(page: number, limit: number, search: string, campaignId?: number, status?: string): Promise<{ contacts: any[], total: number }> {
+    try {
+      // Get contact information from database
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockContacts = [
+        {
+          id: 1,
+          firstName: "Jean",
+          lastName: "Dupont",
+          phone: "06 12 34 56 78",
+          email: "jean.dupont@example.com",
+          company: "ABC Corp",
+          status: "contacted",
+          campaignId: 1,
+          campaignName: "Assurance Santé Q3",
+          lastCallDate: "2023-06-20",
+          lastCallResult: "interested",
+          notes: "Client intéressé, rappeler pour finaliser"
+        },
+        {
+          id: 2,
+          firstName: "Marie",
+          lastName: "Martin",
+          phone: "06 23 45 67 89",
+          email: "marie.martin@example.com",
+          company: "XYZ SAS",
+          status: "pending",
+          campaignId: 1,
+          campaignName: "Assurance Santé Q3",
+          lastCallDate: null,
+          lastCallResult: null,
+          notes: ""
+        },
+        {
+          id: 3,
+          firstName: "Pierre",
+          lastName: "Dubois",
+          phone: "06 34 56 78 90",
+          email: "pierre.dubois@example.com",
+          company: "123 Industries",
+          status: "contacted",
+          campaignId: 2,
+          campaignName: "Renouvellement Internet",
+          lastCallDate: "2023-06-18",
+          lastCallResult: "callback",
+          notes: "Rappeler le 25/06 à 14h"
+        },
+        {
+          id: 4,
+          firstName: "Sophie",
+          lastName: "Leroy",
+          phone: "06 45 67 89 01",
+          email: "sophie.leroy@example.com",
+          company: "Delta SARL",
+          status: "contacted",
+          campaignId: 2,
+          campaignName: "Renouvellement Internet",
+          lastCallDate: "2023-06-15",
+          lastCallResult: "refused",
+          notes: "Client non intéressé"
+        },
+        {
+          id: 5,
+          firstName: "Thomas",
+          lastName: "Moreau",
+          phone: "06 56 78 90 12",
+          email: "thomas.moreau@example.com",
+          company: "Omega Group",
+          status: "pending",
+          campaignId: 3,
+          campaignName: "Étude de marché",
+          lastCallDate: null,
+          lastCallResult: null,
+          notes: ""
+        },
+        {
+          id: 6,
+          firstName: "Laura",
+          lastName: "Petit",
+          phone: "06 67 89 01 23",
+          email: "laura.petit@example.com",
+          company: "Gamma SARL",
+          status: "contacted",
+          campaignId: 3,
+          campaignName: "Étude de marché",
+          lastCallDate: "2023-06-19",
+          lastCallResult: "interested",
+          notes: "Souhaite participer à l'étude"
+        }
+      ];
+      
+      // Apply filters
+      let filteredContacts = [...mockContacts];
+      
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredContacts = filteredContacts.filter(c => 
+          c.firstName.toLowerCase().includes(searchLower) || 
+          c.lastName.toLowerCase().includes(searchLower) || 
+          c.email.toLowerCase().includes(searchLower) || 
+          c.phone.includes(search) ||
+          c.company.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      if (campaignId) {
+        filteredContacts = filteredContacts.filter(c => c.campaignId === campaignId);
+      }
+      
+      if (status) {
+        filteredContacts = filteredContacts.filter(c => c.status === status);
+      }
+      
+      // Apply pagination
+      const total = filteredContacts.length;
+      const startIndex = (page - 1) * limit;
+      const contacts = filteredContacts.slice(startIndex, startIndex + limit);
+      
+      return { contacts, total };
+    } catch (error) {
+      console.error("Error in getContacts:", error);
+      return { contacts: [], total: 0 };
+    }
+  }
+  
+  async getContact(id: number): Promise<any | undefined> {
+    try {
+      // Get contact details by ID
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const contacts = [
+        {
+          id: 1,
+          firstName: "Jean",
+          lastName: "Dupont",
+          phone: "06 12 34 56 78",
+          email: "jean.dupont@example.com",
+          company: "ABC Corp",
+          status: "contacted",
+          campaignId: 1,
+          campaignName: "Assurance Santé Q3",
+          lastCallDate: "2023-06-20",
+          lastCallResult: "interested",
+          notes: "Client intéressé, rappeler pour finaliser",
+          address: "123 rue de Paris, 75001 Paris",
+          createdAt: "2023-05-15",
+          callHistory: [
+            {
+              date: "2023-06-20",
+              time: "14:30",
+              agent: "Thomas Moreau",
+              duration: "5:24",
+              result: "interested",
+              notes: "Client intéressé, rappeler pour finaliser"
+            },
+            {
+              date: "2023-06-15",
+              time: "10:15",
+              agent: "Marie Dubois",
+              duration: "3:12",
+              result: "callback",
+              notes: "Occupé, rappeler plus tard"
+            }
+          ]
+        },
+        {
+          id: 2,
+          firstName: "Marie",
+          lastName: "Martin",
+          phone: "06 23 45 67 89",
+          email: "marie.martin@example.com",
+          company: "XYZ SAS",
+          status: "pending",
+          campaignId: 1,
+          campaignName: "Assurance Santé Q3",
+          lastCallDate: null,
+          lastCallResult: null,
+          notes: "",
+          address: "45 avenue Victor Hugo, 69002 Lyon",
+          createdAt: "2023-05-20",
+          callHistory: []
+        }
+      ];
+      
+      return contacts.find(c => c.id === id);
+    } catch (error) {
+      console.error("Error in getContact:", error);
+      return undefined;
+    }
+  }
+  
+  async createContact(contact: any): Promise<any> {
+    try {
+      // Create contact in database
+      // In a real implementation, this would insert into the database
+      
+      // Mocking the response for demonstration
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        ...contact,
+        createdAt: new Date().toISOString().split('T')[0],
+        status: "pending",
+        lastCallDate: null,
+        lastCallResult: null
+      };
+    } catch (error) {
+      console.error("Error in createContact:", error);
+      throw error;
+    }
+  }
+  
+  async updateContact(id: number, contact: any): Promise<any> {
+    try {
+      // Update contact in database
+      // In a real implementation, this would update the database
+      
+      // Mocking the response for demonstration
+      return {
+        id,
+        ...contact,
+        updatedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error in updateContact:", error);
+      throw error;
+    }
+  }
+  
+  async getContactFilterOptions(): Promise<any> {
+    try {
+      // Get filter options for contacts
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        statuses: [
+          { value: "all", label: "Tous les statuts" },
+          { value: "pending", label: "En attente" },
+          { value: "contacted", label: "Contacté" },
+          { value: "completed", label: "Terminé" }
+        ],
+        campaigns: [
+          { value: "all", label: "Toutes les campagnes" },
+          { value: "1", label: "Assurance Santé Q3" },
+          { value: "2", label: "Renouvellement Internet" },
+          { value: "3", label: "Étude de marché" },
+          { value: "4", label: "Lancement Mobile 5G" },
+          { value: "5", label: "Satisfaction Client Q2" }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getContactFilterOptions:", error);
+      return { statuses: [], campaigns: [] };
+    }
   }
   
   // Campaign management
@@ -895,7 +1166,7 @@ class DatabaseStorage implements IStorage {
     };
   }
   
-  // Statistics
+  // Statistics & Reports
   async getDashboardStats(): Promise<any> {
     // Get dashboard statistics
     // In a real implementation, this would fetch from the database

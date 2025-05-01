@@ -215,6 +215,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Erreur lors de l'import des leads" });
     }
   });
+  
+  // Contact/Lead Management API
+  app.get("/api/contacts", isAuthenticated, async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string || "";
+      const campaignId = req.query.campaignId ? parseInt(req.query.campaignId as string) : undefined;
+      const status = req.query.status as string;
+      
+      const { contacts, total } = await storage.getContacts(page, limit, search, campaignId, status);
+      res.json({ contacts, total, limit });
+    } catch (error) {
+      console.error("Error in /api/contacts:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des contacts" });
+    }
+  });
+  
+  app.get("/api/contacts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Contact non trouvé" });
+      }
+      
+      res.json(contact);
+    } catch (error) {
+      console.error("Error in /api/contacts/:id:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du contact" });
+    }
+  });
+  
+  app.post("/api/contacts", isAuthenticated, async (req, res) => {
+    try {
+      const contact = await storage.createContact(req.body);
+      res.status(201).json(contact);
+    } catch (error) {
+      console.error("Error in POST /api/contacts:", error);
+      res.status(500).json({ message: "Erreur lors de la création du contact" });
+    }
+  });
+  
+  app.put("/api/contacts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.updateContact(contactId, req.body);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Contact non trouvé" });
+      }
+      
+      res.json(contact);
+    } catch (error) {
+      console.error("Error in PUT /api/contacts/:id:", error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour du contact" });
+    }
+  });
+  
+  app.get("/api/contacts/filter-options", isAuthenticated, async (req, res) => {
+    try {
+      const options = await storage.getContactFilterOptions();
+      res.json(options);
+    } catch (error) {
+      console.error("Error in /api/contacts/filter-options:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des options de filtre" });
+    }
+  });
 
   // Script management API
   app.get("/api/scripts", isAuthenticated, async (req, res) => {
@@ -349,7 +418,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getDashboardStats();
       res.json(stats);
     } catch (error) {
+      console.error("Error in /api/stats/overview:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des statistiques" });
+    }
+  });
+  
+  // Reports API
+  app.get("/api/reports/performance", isAuthenticated, async (req, res) => {
+    try {
+      const period = req.query.period as string || "week";
+      const agentId = req.query.agentId ? parseInt(req.query.agentId as string) : undefined;
+      const campaignId = req.query.campaignId ? parseInt(req.query.campaignId as string) : undefined;
+      
+      const data = await storage.getPerformanceReport(period, agentId, campaignId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error in /api/reports/performance:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du rapport de performance" });
+    }
+  });
+  
+  app.get("/api/reports/campaigns", isAuthenticated, async (req, res) => {
+    try {
+      const period = req.query.period as string || "month";
+      const data = await storage.getCampaignsReport(period);
+      res.json(data);
+    } catch (error) {
+      console.error("Error in /api/reports/campaigns:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du rapport des campagnes" });
+    }
+  });
+  
+  app.get("/api/reports/conversion", isAuthenticated, async (req, res) => {
+    try {
+      const period = req.query.period as string || "month";
+      const agentId = req.query.agentId ? parseInt(req.query.agentId as string) : undefined;
+      const campaignId = req.query.campaignId ? parseInt(req.query.campaignId as string) : undefined;
+      
+      const data = await storage.getConversionReport(period, agentId, campaignId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error in /api/reports/conversion:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du rapport de conversion" });
+    }
+  });
+  
+  app.get("/api/reports/activity", isAuthenticated, async (req, res) => {
+    try {
+      const dateFrom = req.query.dateFrom as string;
+      const dateTo = req.query.dateTo as string;
+      const agentId = req.query.agentId ? parseInt(req.query.agentId as string) : undefined;
+      
+      const data = await storage.getActivityReport(dateFrom, dateTo, agentId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error in /api/reports/activity:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du rapport d'activité" });
     }
   });
 
