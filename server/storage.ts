@@ -86,7 +86,7 @@ export interface IStorage {
   updateNotificationSettings(settings: any): Promise<any>;
   
   // Express session store
-  sessionStore: SessionStore;
+  sessionStore: session.Store;
 }
 
 class DatabaseStorage implements IStorage {
@@ -1168,32 +1168,333 @@ class DatabaseStorage implements IStorage {
   
   // Statistics & Reports
   async getDashboardStats(): Promise<any> {
-    // Get dashboard statistics
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return {
-      connectedAgents: 12,
-      totalAgents: 15,
-      activeCallsCount: 8,
-      conversionRate: "24.8%",
-      avgCallTime: "3:24",
-      changes: {
-        calls: 12,
-        conversion: -2.3,
-        avgTime: "+0:18"
+    try {
+      // Get dashboard statistics
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        connectedAgents: 12,
+        totalAgents: 15,
+        activeCallsCount: 8,
+        conversionRate: "24.8%",
+        avgCallTime: "3:24",
+        changes: {
+          calls: 12,
+          conversion: -2.3,
+          avgTime: "+0:18"
+        }
+      };
+    } catch (error) {
+      console.error("Error in getDashboardStats:", error);
+      return {
+        connectedAgents: 0,
+        totalAgents: 0,
+        activeCallsCount: 0,
+        conversionRate: "0%",
+        avgCallTime: "0:00",
+        changes: {
+          calls: 0,
+          conversion: 0,
+          avgTime: "0:00"
+        }
+      };
+    }
+  }
+  
+  async getPerformanceReport(period: string, agentId?: number, campaignId?: number): Promise<any> {
+    try {
+      // Get performance report data
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const dates = [];
+      const calls = [];
+      const conversions = [];
+      
+      // Create date range based on the period
+      const today = new Date();
+      const numDays = period === "week" ? 7 : (period === "month" ? 30 : 90);
+      
+      for (let i = 0; i < numDays; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (numDays - i - 1));
+        dates.push(date.toISOString().split('T')[0]);
+        
+        // Generate random data for calls and conversions
+        calls.push(Math.floor(Math.random() * 50) + 10);
+        conversions.push(Math.floor(Math.random() * 20) + 5);
       }
-    };
+      
+      // Calculate totals and averages
+      const totalCalls = calls.reduce((sum, count) => sum + count, 0);
+      const totalConversions = conversions.reduce((sum, count) => sum + count, 0);
+      const avgCallsPerDay = totalCalls / numDays;
+      const conversionRate = totalConversions / totalCalls * 100;
+      
+      return {
+        period,
+        dates,
+        calls,
+        conversions,
+        summary: {
+          totalCalls,
+          totalConversions,
+          avgCallsPerDay: avgCallsPerDay.toFixed(1),
+          conversionRate: conversionRate.toFixed(1) + "%"
+        }
+      };
+    } catch (error) {
+      console.error("Error in getPerformanceReport:", error);
+      return {
+        period,
+        dates: [],
+        calls: [],
+        conversions: [],
+        summary: {
+          totalCalls: 0,
+          totalConversions: 0,
+          avgCallsPerDay: "0",
+          conversionRate: "0%"
+        }
+      };
+    }
+  }
+  
+  async getCampaignsReport(period: string): Promise<any> {
+    try {
+      // Get campaigns report data
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        campaigns: [
+          {
+            id: 1,
+            name: "Assurance Santé Q3",
+            total: 340,
+            interested: 82,
+            callback: 120,
+            refused: 138,
+            conversionRate: "24.1%"
+          },
+          {
+            id: 2,
+            name: "Renouvellement Internet",
+            total: 276,
+            interested: 85,
+            callback: 76,
+            refused: 115,
+            conversionRate: "30.8%"
+          },
+          {
+            id: 3,
+            name: "Étude de marché",
+            total: 90,
+            interested: 23,
+            callback: 32,
+            refused: 35,
+            conversionRate: "25.6%"
+          },
+          {
+            id: 5,
+            name: "Satisfaction Client Q2",
+            total: 468,
+            interested: 180,
+            callback: 132,
+            refused: 156,
+            conversionRate: "38.5%"
+          }
+        ],
+        summary: {
+          totalCalls: 1174,
+          totalConversions: 370,
+          avgConversionRate: "31.5%"
+        }
+      };
+    } catch (error) {
+      console.error("Error in getCampaignsReport:", error);
+      return {
+        campaigns: [],
+        summary: {
+          totalCalls: 0,
+          totalConversions: 0,
+          avgConversionRate: "0%"
+        }
+      };
+    }
+  }
+  
+  async getConversionReport(period: string, agentId?: number, campaignId?: number): Promise<any> {
+    try {
+      // Get conversion report data
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        pieChart: [
+          { name: "Intéressé", value: 370, color: "#4ade80" },
+          { name: "Rappel", value: 360, color: "#facc15" },
+          { name: "Refus", value: 444, color: "#f87171" }
+        ],
+        conversionTrend: {
+          labels: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+          data: [
+            { name: "Taux de conversion", values: [22.5, 24.8, 23.2, 26.4, 28.1, 18.9, 16.2] }
+          ]
+        },
+        summary: {
+          totalCalls: 1174,
+          interested: 370,
+          callback: 360,
+          refused: 444,
+          interestedPercentage: "31.5%",
+          callbackPercentage: "30.7%",
+          refusedPercentage: "37.8%"
+        }
+      };
+    } catch (error) {
+      console.error("Error in getConversionReport:", error);
+      return {
+        pieChart: [],
+        conversionTrend: {
+          labels: [],
+          data: []
+        },
+        summary: {
+          totalCalls: 0,
+          interested: 0,
+          callback: 0,
+          refused: 0,
+          interestedPercentage: "0%",
+          callbackPercentage: "0%",
+          refusedPercentage: "0%"
+        }
+      };
+    }
+  }
+  
+  async getActivityReport(dateFrom: string, dateTo: string, agentId?: number): Promise<any> {
+    try {
+      // Get activity report data
+      // In a real implementation, this would fetch from the database
+      
+      // Calculate number of days between dates
+      const from = new Date(dateFrom);
+      const to = new Date(dateTo);
+      const daysDiff = Math.ceil((to.getTime() - from.getTime()) / (1000 * 3600 * 24)) + 1;
+      
+      // Generate mock data
+      const agentActivities = [
+        {
+          id: 2,
+          username: "Emilie Laurent",
+          totalCalls: 186,
+          totalDuration: "12:43:20",
+          avgCallDuration: "4:06",
+          statuses: {
+            available: "68%",
+            on_call: "24%",
+            paused: "5%",
+            offline: "3%"
+          },
+          callResults: {
+            interested: 45,
+            callback: 62,
+            refused: 79
+          },
+          conversions: "24.2%"
+        },
+        {
+          id: 3,
+          username: "Thomas Moreau",
+          totalCalls: 204,
+          totalDuration: "14:12:08",
+          avgCallDuration: "4:10",
+          statuses: {
+            available: "72%",
+            on_call: "22%",
+            paused: "4%",
+            offline: "2%"
+          },
+          callResults: {
+            interested: 58,
+            callback: 76,
+            refused: 70
+          },
+          conversions: "28.4%"
+        },
+        {
+          id: 4,
+          username: "Sophie Martin",
+          totalCalls: 178,
+          totalDuration: "11:32:14",
+          avgCallDuration: "3:53",
+          statuses: {
+            available: "65%",
+            on_call: "20%",
+            paused: "8%",
+            offline: "7%"
+          },
+          callResults: {
+            interested: 51,
+            callback: 54,
+            refused: 73
+          },
+          conversions: "28.7%"
+        }
+      ];
+      
+      // If agent ID is specified, filter data
+      const activities = agentId ? agentActivities.filter(a => a.id === agentId) : agentActivities;
+      
+      // Calculate summary if multiple agents
+      let summary = null;
+      if (activities.length > 1) {
+        const totalCalls = activities.reduce((sum, a) => sum + a.totalCalls, 0);
+        const totalInterested = activities.reduce((sum, a) => sum + a.callResults.interested, 0);
+        const avgConversion = totalInterested / totalCalls * 100;
+        
+        summary = {
+          totalAgents: activities.length,
+          totalCalls,
+          avgCallsPerAgent: (totalCalls / activities.length).toFixed(1),
+          avgConversion: avgConversion.toFixed(1) + "%"
+        };
+      }
+      
+      return {
+        dateRange: {
+          from: dateFrom,
+          to: dateTo,
+          days: daysDiff
+        },
+        activities,
+        summary
+      };
+    } catch (error) {
+      console.error("Error in getActivityReport:", error);
+      return {
+        dateRange: {
+          from: dateFrom,
+          to: dateTo,
+          days: 0
+        },
+        activities: [],
+        summary: null
+      };
+    }
   }
   
   // Supervision
   async getSupervisionData(): Promise<any> {
-    // Get supervision data
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return {
-      agents: [
+    try {
+      // Get supervision data
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        agents: [
         {
           id: 2,
           username: "Emilie Laurent",
@@ -1307,83 +1608,136 @@ class DatabaseStorage implements IStorage {
         }
       ]
     };
+    } catch (error) {
+      console.error("Error in getSupervisionData:", error);
+      return {
+        agents: [],
+        queues: [],
+        campaigns: [],
+        alerts: []
+      };
+    }
   }
   
   // Settings
   async getSettings(): Promise<any> {
-    // Get application settings
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return {
-      general: {
-        companyName: "JOBDIAL",
-        timezone: "Europe/Paris",
-        dateFormat: "DD/MM/YYYY",
-        language: "fr"
-      },
-      voip: {
-        twilioAccountSid: "",
-        twilioAuthToken: "",
-        twilioPhoneNumber: "",
-        useWebRTC: true,
-        outboundPrefix: "",
-        recordCalls: false
-      },
-      notifications: {
-        emailNotifications: false,
-        desktopNotifications: true,
-        emailAddress: "",
-        notifyOnQueueThreshold: true,
-        queueThreshold: 5,
-        notifyOnAgentInactive: true,
-        inactivityThreshold: 15
-      }
-    };
+    try {
+      // Get application settings
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        general: {
+          companyName: "JOBDIAL",
+          timezone: "Europe/Paris",
+          dateFormat: "DD/MM/YYYY",
+          language: "fr"
+        },
+        voip: {
+          twilioAccountSid: "",
+          twilioAuthToken: "",
+          twilioPhoneNumber: "",
+          useWebRTC: true,
+          outboundPrefix: "",
+          recordCalls: false
+        },
+        notifications: {
+          emailNotifications: false,
+          desktopNotifications: true,
+          emailAddress: "",
+          notifyOnQueueThreshold: true,
+          queueThreshold: 5,
+          notifyOnAgentInactive: true,
+          inactivityThreshold: 15
+        }
+      };
+    } catch (error) {
+      console.error("Error in getSettings:", error);
+      return {
+        general: {
+          companyName: "",
+          timezone: "Europe/Paris",
+          dateFormat: "DD/MM/YYYY",
+          language: "fr"
+        },
+        voip: {
+          twilioAccountSid: "",
+          twilioAuthToken: "",
+          twilioPhoneNumber: "",
+          useWebRTC: false,
+          outboundPrefix: "",
+          recordCalls: false
+        },
+        notifications: {
+          emailNotifications: false,
+          desktopNotifications: false,
+          emailAddress: "",
+          notifyOnQueueThreshold: false,
+          queueThreshold: 0,
+          notifyOnAgentInactive: false,
+          inactivityThreshold: 0
+        }
+      };
+    }
   }
   
   async updateGeneralSettings(settings: any): Promise<any> {
-    // Update general settings
-    // In a real implementation, this would update the database
-    
-    // Mocking the response for demonstration
-    return {
-      companyName: settings.companyName,
-      timezone: settings.timezone,
-      dateFormat: settings.dateFormat,
-      language: settings.language
-    };
+    try {
+      // Update general settings
+      // In a real implementation, this would update the database
+      
+      // Mocking the response for demonstration
+      return {
+        companyName: settings.companyName,
+        timezone: settings.timezone,
+        dateFormat: settings.dateFormat,
+        language: settings.language
+      };
+    } catch (error) {
+      console.error("Error in updateGeneralSettings:", error);
+      throw error;
+    }
   }
   
   async updateVoipSettings(settings: any): Promise<any> {
-    // Update VoIP settings
-    // In a real implementation, this would update the database
-    
-    // Mocking the response for demonstration
-    return {
-      twilioAccountSid: settings.twilioAccountSid,
-      twilioAuthToken: settings.twilioAuthToken,
-      twilioPhoneNumber: settings.twilioPhoneNumber,
-      useWebRTC: settings.useWebRTC,
-      outboundPrefix: settings.outboundPrefix,
-      recordCalls: settings.recordCalls
-    };
+    try {
+      // Update VoIP settings
+      // In a real implementation, this would update the database
+      
+      // Mocking the response for demonstration
+      return {
+        twilioAccountSid: settings.twilioAccountSid,
+        twilioAuthToken: settings.twilioAuthToken,
+        twilioPhoneNumber: settings.twilioPhoneNumber,
+        useWebRTC: settings.useWebRTC,
+        outboundPrefix: settings.outboundPrefix,
+        recordCalls: settings.recordCalls
+      };
+    } catch (error) {
+      console.error("Error in updateVoipSettings:", error);
+      throw error;
+    }
   }
   
   async updateNotificationSettings(settings: any): Promise<any> {
-    // Update notification settings
-    // In a real implementation, this would update the database
-    
-    // Mocking the response for demonstration
-    return {
-      emailNotifications: settings.emailNotifications,
-      desktopNotifications: settings.desktopNotifications,
-      emailAddress: settings.emailAddress,
-      notifyOnQueueThreshold: settings.notifyOnQueueThreshold,
-      queueThreshold: settings.queueThreshold,
-      notifyOnAgentInactive: settings.notifyOnAgentInactive,
-      inactivityThreshold: settings.inactivityThreshold
-    };
+    try {
+      // Update notification settings
+      // In a real implementation, this would update the database
+      
+      // Mocking the response for demonstration
+      return {
+        emailNotifications: settings.emailNotifications,
+        desktopNotifications: settings.desktopNotifications,
+        emailAddress: settings.emailAddress,
+        notifyOnQueueThreshold: settings.notifyOnQueueThreshold,
+        queueThreshold: settings.queueThreshold,
+        notifyOnAgentInactive: settings.notifyOnAgentInactive,
+        inactivityThreshold: settings.inactivityThreshold
+      };
+    } catch (error) {
+      console.error("Error in updateNotificationSettings:", error);
+      throw error;
+    }
   }
 }
 
