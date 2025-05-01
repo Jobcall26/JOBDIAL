@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import DashboardPage from "@/pages/dashboard-page";
 import AuthPage from "@/pages/auth-page";
@@ -16,7 +16,39 @@ import CallHistoryPage from "@/pages/call-history-page";
 import SettingsPage from "@/pages/settings-page";
 import { WebSocketProvider } from "@/hooks/use-websocket";
 import { SoftphoneProvider } from "@/hooks/use-softphone";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import WelcomeAnimation from "@/components/animations/WelcomeAnimation";
+import { AnimatePresence } from "framer-motion";
+
+// Composant pour gérer l'animation de bienvenue
+function WelcomeHandler() {
+  const { user } = useAuth();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [initialAuth, setInitialAuth] = useState(true);
+  
+  useEffect(() => {
+    // Si l'utilisateur vient de se connecter (n'était pas connecté avant)
+    if (user && initialAuth) {
+      setInitialAuth(false);
+      setShowWelcome(true);
+      
+      // Effacer l'animation après un délai
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+      }, 4000);
+      
+      return () => clearTimeout(timer);
+    } else if (user) {
+      setInitialAuth(false);
+    }
+  }, [user, initialAuth]);
+  
+  return (
+    <AnimatePresence>
+      {showWelcome && <WelcomeAnimation />}
+    </AnimatePresence>
+  );
+}
 
 function Router() {
   console.log("Router component initializing");
@@ -64,6 +96,7 @@ function App() {
           <WebSocketProvider>
             <SoftphoneProvider>
               <Router />
+              <WelcomeHandler />
               <Toaster />
             </SoftphoneProvider>
           </WebSocketProvider>
