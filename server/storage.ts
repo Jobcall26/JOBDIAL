@@ -178,9 +178,12 @@ class DatabaseStorage implements IStorage {
   
   async createAgent(data: any): Promise<any> {
     // Create agent record in database
+    // Import hashPassword from auth.ts to ensure passwords are properly hashed
+    const { hashPassword } = require('./auth');
+    
     const agent = {
       username: data.username,
-      password: data.password,
+      password: await hashPassword(data.password), // Hasher le mot de passe
       email: data.email,
       role: "agent"
     };
@@ -202,6 +205,9 @@ class DatabaseStorage implements IStorage {
   
   async updateAgent(id: number, data: any): Promise<any> {
     // Update agent record in database
+    // Import hashPassword from auth.ts to ensure passwords are properly hashed
+    const { hashPassword } = require('./auth');
+    
     const updateData: any = {
       username: data.username,
       email: data.email
@@ -209,7 +215,7 @@ class DatabaseStorage implements IStorage {
     
     // Only include password if provided (not empty)
     if (data.password) {
-      updateData.password = data.password;
+      updateData.password = await hashPassword(data.password); // Hasher le mot de passe
     }
     
     const [result] = await db.update(users)
