@@ -944,132 +944,147 @@ class DatabaseStorage implements IStorage {
   }
   
   async deleteScript(id: number): Promise<void> {
-    // Delete script from database
-    // In a real implementation, this would delete from the database
-    
-    // For now, just log it
-    console.log(`Script ${id} deleted`);
+    try {
+      // Delete script from database
+      // In a real implementation, this would delete from the database
+      
+      // For now, just log it
+      console.log(`Script ${id} deleted`);
+    } catch (error) {
+      console.error("Error in deleteScript:", error);
+      throw error;
+    }
   }
   
   async duplicateScript(id: number): Promise<any> {
-    // Duplicate script in database
-    // In a real implementation, this would:
-    // 1. Fetch the original script
-    // 2. Create a new script with the same content but "(copie)" appended to the name
-    
-    const original = await this.getScript(id);
-    
-    if (!original) {
-      throw new Error("Script not found");
+    try {
+      // Duplicate script in database
+      // In a real implementation, this would:
+      // 1. Fetch the original script
+      // 2. Create a new script with the same content but "(copie)" appended to the name
+      
+      const original = await this.getScript(id);
+      
+      if (!original) {
+        throw new Error("Script not found");
+      }
+      
+      // Mocking the response for demonstration
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        name: `${original.name} (copie)`,
+        content: original.content,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        campaignsCount: 0,
+        wordCount: original.content.split(/\s+/).length
+      };
+    } catch (error) {
+      console.error("Error in duplicateScript:", error);
+      throw error;
     }
-    
-    // Mocking the response for demonstration
-    return {
-      id: Math.floor(Math.random() * 1000) + 10,
-      name: `${original.name} (copie)`,
-      content: original.content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      campaignsCount: 0,
-      wordCount: original.content.split(/\s+/).length
-    };
   }
   
   // Call history
   async getRecentCalls(page: number, limit: number): Promise<{ calls: any[], total: number }> {
-    // Get recent calls
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const mockCalls = [
-      {
-        id: 1,
-        agent: {
-          id: 2,
-          username: "Emilie Laurent"
-        },
-        contact: {
-          name: "Martin Bernard",
-          phone: "06 12 34 56 78"
-        },
-        campaign: {
+    try {
+      // Get recent calls
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockCalls = [
+        {
           id: 1,
-          name: "Assurance Santé Q3"
+          agent: {
+            id: 2,
+            username: "Emilie Laurent"
+          },
+          contact: {
+            name: "Martin Bernard",
+            phone: "06 12 34 56 78"
+          },
+          campaign: {
+            id: 1,
+            name: "Assurance Santé Q3"
+          },
+          duration: "3:24",
+          timestamp: "14:32",
+          date: "Aujourd'hui",
+          result: "interested"
         },
-        duration: "3:24",
-        timestamp: "14:32",
-        date: "Aujourd'hui",
-        result: "interested"
-      },
-      {
-        id: 2,
-        agent: {
-          id: 3,
-          username: "Thomas Moreau"
-        },
-        contact: {
-          name: "Catherine Petit",
-          phone: "07 98 76 54 32"
-        },
-        campaign: {
+        {
           id: 2,
-          name: "Renouvellement Internet"
+          agent: {
+            id: 3,
+            username: "Thomas Moreau"
+          },
+          contact: {
+            name: "Catherine Petit",
+            phone: "07 98 76 54 32"
+          },
+          campaign: {
+            id: 2,
+            name: "Renouvellement Internet"
+          },
+          duration: "4:15",
+          timestamp: "13:45",
+          date: "Aujourd'hui",
+          result: "interested"
         },
-        duration: "4:15",
-        timestamp: "13:45",
-        date: "Aujourd'hui",
-        result: "interested"
-      },
-      {
-        id: 3,
-        agent: {
+        {
+          id: 3,
+          agent: {
+            id: 4,
+            username: "Sophie Martin"
+          },
+          contact: {
+            name: "Jacques Leroy",
+            phone: "01 23 45 67 89"
+          },
+          campaign: {
+            id: 3,
+            name: "Etude de marché"
+          },
+          duration: "1:47",
+          timestamp: "11:23",
+          date: "Aujourd'hui",
+          result: "refused"
+        },
+        {
           id: 4,
-          username: "Sophie Martin"
-        },
-        contact: {
-          name: "Jacques Leroy",
-          phone: "01 23 45 67 89"
-        },
-        campaign: {
-          id: 3,
-          name: "Etude de marché"
-        },
-        duration: "1:47",
-        timestamp: "11:23",
-        date: "Aujourd'hui",
-        result: "refused"
-      },
-      {
-        id: 4,
-        agent: {
-          id: 5,
-          username: "Jean Dupont"
-        },
-        contact: {
-          name: "Isabelle Marchand",
-          phone: "06 87 65 43 21"
-        },
-        campaign: {
-          id: 2,
-          name: "Renouvellement Internet"
-        },
-        duration: "2:38",
-        timestamp: "10:15",
-        date: "Aujourd'hui",
-        result: "callback"
-      }
-    ];
-    
-    // Generate more mock data to fill the limit
-    const totalReal = mockCalls.length;
-    
-    // Apply pagination
-    const total = 120; // Mock total count
-    const startIndex = (page - 1) * limit;
-    const endIndex = Math.min(startIndex + limit, totalReal);
-    const calls = mockCalls.slice(startIndex, endIndex);
-    
-    return { calls, total };
+          agent: {
+            id: 5,
+            username: "Jean Dupont"
+          },
+          contact: {
+            name: "Isabelle Marchand",
+            phone: "06 87 65 43 21"
+          },
+          campaign: {
+            id: 2,
+            name: "Renouvellement Internet"
+          },
+          duration: "2:38",
+          timestamp: "10:15",
+          date: "Aujourd'hui",
+          result: "callback"
+        }
+      ];
+      
+      // Generate more mock data to fill the limit
+      const totalReal = mockCalls.length;
+      
+      // Apply pagination
+      const total = 120; // Mock total count
+      const startIndex = (page - 1) * limit;
+      const endIndex = Math.min(startIndex + limit, totalReal);
+      const calls = mockCalls.slice(startIndex, endIndex);
+      
+      return { calls, total };
+    } catch (error) {
+      console.error("Error in getRecentCalls:", error);
+      return { calls: [], total: 0 };
+    }
   }
   
   async getCallHistory(
@@ -1082,150 +1097,163 @@ class DatabaseStorage implements IStorage {
     dateFrom?: string, 
     dateTo?: string
   ): Promise<{ calls: any[], total: number }> {
-    // Get call history with filters
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const mockCalls = [
-      {
-        id: 1,
-        agent: {
-          id: 2,
-          username: "Emilie Laurent"
-        },
-        contact: {
-          name: "Martin Bernard",
-          phone: "06 12 34 56 78"
-        },
-        campaign: {
+    try {
+      // Get call history with filters
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockCalls = [
+        {
           id: 1,
-          name: "Assurance Santé Q3"
+          agent: {
+            id: 2,
+            username: "Emilie Laurent"
+          },
+          contact: {
+            name: "Martin Bernard",
+            phone: "06 12 34 56 78"
+          },
+          campaign: {
+            id: 1,
+            name: "Assurance Santé Q3"
+          },
+          duration: "3:24",
+          timestamp: "14:32",
+          date: "03/07/2023",
+          result: "interested",
+          notes: "Client intéressé par l'offre famille. Rappeler pour finaliser le contrat.",
+          recordingUrl: ""
         },
-        duration: "3:24",
-        timestamp: "14:32",
-        date: "03/07/2023",
-        result: "interested",
-        notes: "Client intéressé par l'offre famille. Rappeler pour finaliser le contrat.",
-        recordingUrl: ""
-      },
-      {
-        id: 2,
-        agent: {
-          id: 3,
-          username: "Thomas Moreau"
-        },
-        contact: {
-          name: "Catherine Petit",
-          phone: "07 98 76 54 32"
-        },
-        campaign: {
+        {
           id: 2,
-          name: "Renouvellement Internet"
+          agent: {
+            id: 3,
+            username: "Thomas Moreau"
+          },
+          contact: {
+            name: "Catherine Petit",
+            phone: "07 98 76 54 32"
+          },
+          campaign: {
+            id: 2,
+            name: "Renouvellement Internet"
+          },
+          duration: "4:15",
+          timestamp: "13:45",
+          date: "03/07/2023",
+          result: "interested",
+          notes: "Cliente a accepté l'offre de renouvellement à 29,99€. Documents envoyés par email.",
+          recordingUrl: ""
         },
-        duration: "4:15",
-        timestamp: "13:45",
-        date: "03/07/2023",
-        result: "interested",
-        notes: "Cliente a accepté l'offre de renouvellement à 29,99€. Documents envoyés par email.",
-        recordingUrl: ""
-      },
-      {
-        id: 3,
-        agent: {
+        {
+          id: 3,
+          agent: {
+            id: 4,
+            username: "Sophie Martin"
+          },
+          contact: {
+            name: "Jacques Leroy",
+            phone: "01 23 45 67 89"
+          },
+          campaign: {
+            id: 3,
+            name: "Etude de marché"
+          },
+          duration: "1:47",
+          timestamp: "11:23",
+          date: "03/07/2023",
+          result: "refused",
+          notes: "Contact pas intéressé par l'étude. Ne pas rappeler.",
+          recordingUrl: ""
+        },
+        {
           id: 4,
-          username: "Sophie Martin"
-        },
-        contact: {
-          name: "Jacques Leroy",
-          phone: "01 23 45 67 89"
-        },
-        campaign: {
-          id: 3,
-          name: "Etude de marché"
-        },
-        duration: "1:47",
-        timestamp: "11:23",
-        date: "03/07/2023",
-        result: "refused",
-        notes: "Contact pas intéressé par l'étude. Ne pas rappeler.",
-        recordingUrl: ""
-      },
-      {
-        id: 4,
-        agent: {
-          id: 5,
-          username: "Jean Dupont"
-        },
-        contact: {
-          name: "Isabelle Marchand",
-          phone: "06 87 65 43 21"
-        },
-        campaign: {
-          id: 2,
-          name: "Renouvellement Internet"
-        },
-        duration: "2:38",
-        timestamp: "10:15",
-        date: "03/07/2023",
-        result: "callback",
-        notes: "Contact occupé. Rappeler demain entre 14h et 16h.",
-        recordingUrl: ""
+          agent: {
+            id: 5,
+            username: "Jean Dupont"
+          },
+          contact: {
+            name: "Isabelle Marchand",
+            phone: "06 87 65 43 21"
+          },
+          campaign: {
+            id: 2,
+            name: "Renouvellement Internet"
+          },
+          duration: "2:38",
+          timestamp: "10:15",
+          date: "03/07/2023",
+          result: "callback",
+          notes: "Contact occupé. Rappeler demain entre 14h et 16h.",
+          recordingUrl: ""
+        }
+      ];
+      
+      // Apply filters
+      let filteredCalls = [...mockCalls];
+      
+      if (search) {
+        filteredCalls = filteredCalls.filter(c => 
+          c.contact.name.toLowerCase().includes(search.toLowerCase()) || 
+          c.contact.phone.includes(search) ||
+          c.agent.username.toLowerCase().includes(search.toLowerCase()) ||
+          c.campaign.name.toLowerCase().includes(search.toLowerCase())
+        );
       }
-    ];
-    
-    // Apply filters
-    let filteredCalls = [...mockCalls];
-    
-    if (search) {
-      filteredCalls = filteredCalls.filter(c => 
-        c.contact.name.toLowerCase().includes(search.toLowerCase()) || 
-        c.contact.phone.includes(search) ||
-        c.agent.username.toLowerCase().includes(search.toLowerCase()) ||
-        c.campaign.name.toLowerCase().includes(search.toLowerCase())
-      );
+      
+      if (result && result !== "all") {
+        filteredCalls = filteredCalls.filter(c => c.result === result);
+      }
+      
+      if (campaign && campaign !== "all") {
+        filteredCalls = filteredCalls.filter(c => c.campaign.id === parseInt(campaign));
+      }
+      
+      if (agent && agent !== "all") {
+        filteredCalls = filteredCalls.filter(c => c.agent.id === parseInt(agent));
+      }
+      
+      // Skip date filtering for mock data
+      
+      // Apply pagination
+      const total = filteredCalls.length;
+      const startIndex = (page - 1) * limit;
+      const endIndex = Math.min(startIndex + limit, total);
+      const calls = filteredCalls.slice(startIndex, endIndex);
+      
+      return { calls, total };
+    } catch (error) {
+      console.error("Error in getCallHistory:", error);
+      return { calls: [], total: 0 };
     }
-    
-    if (result && result !== "all") {
-      filteredCalls = filteredCalls.filter(c => c.result === result);
-    }
-    
-    if (campaign && campaign !== "all") {
-      filteredCalls = filteredCalls.filter(c => c.campaign.id === parseInt(campaign));
-    }
-    
-    if (agent && agent !== "all") {
-      filteredCalls = filteredCalls.filter(c => c.agent.id === parseInt(agent));
-    }
-    
-    // Skip date filtering for mock data
-    
-    // Apply pagination
-    const total = filteredCalls.length;
-    const startIndex = (page - 1) * limit;
-    const endIndex = Math.min(startIndex + limit, total);
-    const calls = filteredCalls.slice(startIndex, endIndex);
-    
-    return { calls, total };
   }
   
   async getCallFilterOptions(): Promise<any> {
-    // Get filter options for call history
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return {
-      campaigns: [
-        { id: 1, name: "Assurance Santé Q3" },
-        { id: 2, name: "Renouvellement Internet" },
-        { id: 3, name: "Etude de marché" }
-      ],
-      agents: [
-        { id: 2, username: "Emilie Laurent" },
-        { id: 3, username: "Thomas Moreau" },
-        { id: 4, username: "Sophie Martin" },
-        { id: 5, username: "Jean Dupont" }
-      ]
-    };
+    try {
+      // Get filter options for call history
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return {
+        campaigns: [
+          { id: 1, name: "Assurance Santé Q3" },
+          { id: 2, name: "Renouvellement Internet" },
+          { id: 3, name: "Etude de marché" }
+        ],
+        agents: [
+          { id: 2, username: "Emilie Laurent" },
+          { id: 3, username: "Thomas Moreau" },
+          { id: 4, username: "Sophie Martin" },
+          { id: 5, username: "Jean Dupont" }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getCallFilterOptions:", error);
+      return {
+        campaigns: [],
+        agents: []
+      };
+    }
   }
   
   // Statistics & Reports
