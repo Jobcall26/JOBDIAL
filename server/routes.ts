@@ -66,12 +66,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Agent campaigns API
+  app.get("/api/agents/campaigns", isAuthenticated, async (req, res) => {
+    try {
+      const agentId = req.query.agentId ? parseInt(req.query.agentId as string) : undefined;
+      
+      // Mocking response for demonstration
+      const campaigns = [
+        {
+          id: 1,
+          name: "Assurance Santé Q3",
+          description: "Campagne pour les nouveaux produits d'assurance santé",
+          scriptId: 1,
+          progress: 34,
+          status: "active"
+        },
+        {
+          id: 2,
+          name: "Renouvellement Internet",
+          description: "Campagne de renouvellement des contrats internet",
+          scriptId: 2,
+          progress: 67,
+          status: "active"
+        },
+        {
+          id: 5,
+          name: "Satisfaction Client Q2",
+          description: "Enquête de satisfaction des clients du second trimestre",
+          scriptId: 5,
+          progress: 12,
+          status: "active"
+        }
+      ];
+      
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Error in /api/agents/campaigns:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des campagnes des agents" });
+    }
+  });
+  
   // Agent status API
   app.get("/api/agents/status", isAuthenticated, async (req, res) => {
     try {
       const agentsStatus = await storage.getAgentsStatus();
       res.json(agentsStatus);
     } catch (error) {
+      console.error("Error in /api/agents/status:", error);
       res.status(500).json({ message: "Erreur lors de la récupération du statut des agents" });
     }
   });

@@ -237,32 +237,33 @@ class DatabaseStorage implements IStorage {
   }
   
   async getAgentsStatus(): Promise<{ agents: any[], counts: any }> {
-    // Get agents with their current status
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const agentsList = await db.query.users.findMany({
-      where: eq(users.role, "agent"),
-      orderBy: users.username
-    });
-    
-    const agents = agentsList.map(agent => {
-      const status = ["available", "on_call", "paused", "offline"][Math.floor(Math.random() * 4)] as string;
-      const statusDuration = `${Math.floor(Math.random() * 3)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
+    try {
+      // Get agents with their current status
+      // In a real implementation, this would fetch from the database
       
-      const agent_data = {
-        id: agent.id,
-        username: agent.username,
-        status,
-        statusDuration
-      };
+      // Mocking the response for demonstration
+      const agentsList = await db.query.users.findMany({
+        where: eq(users.role, "agent"),
+        orderBy: users.username
+      });
       
-      // Add call data if agent is on call
-      if (status === "on_call") {
-        return {
-          ...agent_data,
-          currentCall: {
-            contactName: `Contact ${Math.floor(Math.random() * 100)}`,
+      const agents = agentsList.map(agent => {
+        const status = ["available", "on_call", "paused", "offline"][Math.floor(Math.random() * 4)] as string;
+        const statusDuration = `${Math.floor(Math.random() * 3)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
+        
+        const agent_data = {
+          id: agent.id,
+          username: agent.username,
+          status,
+          statusDuration
+        };
+        
+        // Add call data if agent is on call
+        if (status === "on_call") {
+          return {
+            ...agent_data,
+            currentCall: {
+              contactName: `Contact ${Math.floor(Math.random() * 100)}`,
             duration: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
           }
         };
@@ -279,6 +280,14 @@ class DatabaseStorage implements IStorage {
     };
     
     return { agents, counts };
+    } catch (error) {
+      console.error("Error in getAgentsStatus:", error);
+      // Renvoyer des données par défaut en cas d'erreur pour éviter un échec complet
+      return {
+        agents: [],
+        counts: { available: 0, on_call: 0, offline: 0 }
+      };
+    }
   }
   
   async updateAgentStatus(agentId: number, status: string): Promise<void> {
