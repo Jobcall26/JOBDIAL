@@ -32,20 +32,24 @@ function WelcomeHandler() {
       setInitialAuth(false);
       setShowWelcome(true);
       
-      // Effacer l'animation après un court délai
-      const timer = setTimeout(() => {
+      // Écouter l'événement de fin d'animation envoyé par le composant WelcomeAnimation
+      const handleAnimationComplete = () => {
         setShowWelcome(false);
-      }, 4000); // Réduit à 4 secondes comme demandé
+        console.log("Animation terminée, état mis à jour");
+      };
       
-      return () => clearTimeout(timer);
+      document.addEventListener('welcomeAnimationComplete', handleAnimationComplete);
+      
+      return () => {
+        document.removeEventListener('welcomeAnimationComplete', handleAnimationComplete);
+      };
     } else if (user) {
       setInitialAuth(false);
     }
   }, [user, initialAuth]);
   
-  // Utilisation de mode="wait" pour s'assurer que l'animation est complètement terminée
   return (
-    <AnimatePresence mode="wait" onExitComplete={() => console.log("Animation complètement terminée")}>
+    <AnimatePresence mode="wait">
       {showWelcome && <WelcomeAnimation />}
     </AnimatePresence>
   );

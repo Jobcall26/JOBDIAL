@@ -1,12 +1,35 @@
-import { motion } from 'framer-motion';
+import { motion, useAnimate } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
+import { useEffect } from 'react';
 
 export default function WelcomeAnimation() {
   const { user } = useAuth();
-
+  const [scope, animate] = useAnimate();
+  
+  // Force l'animation à se terminer et à disparaître après 3.5 secondes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Animation de sortie
+      animate(scope.current, { opacity: 0 }, { duration: 0.5 })
+        .then(() => {
+          // Informer le parent que l'animation est terminée via un événement personnalisé
+          document.dispatchEvent(new Event('welcomeAnimationComplete'));
+          
+          // S'assurer que l'élément est invisible
+          const element = document.querySelector('.welcome-animation-container');
+          if (element) {
+            (element as HTMLElement).style.display = 'none';
+          }
+        });
+    }, 3500); // Un peu moins que les 4 secondes totales pour permettre l'animation de sortie
+    
+    return () => clearTimeout(timer);
+  }, [animate]);
+  
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+      ref={scope}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 welcome-animation-container"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
