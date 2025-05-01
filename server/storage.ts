@@ -12,7 +12,7 @@ import {
   agentStatus
 } from "@shared/schema";
 import { eq, and, like, or, desc, sql } from "drizzle-orm";
-import { type SessionStore } from "express-session";
+// Référence au type Store de express-session
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import { pool } from "@db";
@@ -90,7 +90,7 @@ export interface IStorage {
 }
 
 class DatabaseStorage implements IStorage {
-  sessionStore: SessionStore;
+  sessionStore: session.Store;
   
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -188,63 +188,75 @@ class DatabaseStorage implements IStorage {
   }
   
   async createAgent(data: any): Promise<any> {
-    // Create agent record in database
-    // Import hashPassword from auth.ts to ensure passwords are properly hashed
-    const { hashPassword } = require('./auth');
-    
-    const agent = {
-      username: data.username,
-      password: await hashPassword(data.password), // Hasher le mot de passe
-      email: data.email,
-      role: "agent"
-    };
-    
-    const [result] = await db.insert(users).values(agent).returning();
-    
-    // Assign campaigns if specified
-    if (data.campaigns && data.campaigns.length > 0) {
-      // In a real implementation, insert campaign assignments
+    try {
+      // Create agent record in database
+      // Import hashPassword from auth.ts to ensure passwords are properly hashed
+      const { hashPassword } = require('./auth');
+      
+      // Create properly typed agent object
+      const agentData: InsertUser = {
+        username: data.username,
+        password: await hashPassword(data.password), // Hasher le mot de passe
+        email: data.email || null,
+        role: "agent"
+      };
+      
+      const [result] = await db.insert(users).values(agentData).returning();
+      
+      // Assign campaigns if specified
+      if (data.campaigns && data.campaigns.length > 0) {
+        // In a real implementation, insert campaign assignments
+      }
+      
+      return {
+        id: result.id,
+        username: result.username,
+        email: result.email,
+        role: result.role
+      };
+    } catch (error) {
+      console.error("Error in createAgent:", error);
+      throw error;
     }
-    
-    return {
-      id: result.id,
-      username: result.username,
-      email: result.email,
-      role: result.role
-    };
   }
   
   async updateAgent(id: number, data: any): Promise<any> {
-    // Update agent record in database
-    // Import hashPassword from auth.ts to ensure passwords are properly hashed
-    const { hashPassword } = require('./auth');
-    
-    const updateData: any = {
-      username: data.username,
-      email: data.email
-    };
-    
-    // Only include password if provided (not empty)
-    if (data.password) {
-      updateData.password = await hashPassword(data.password); // Hasher le mot de passe
+    try {
+      // Update agent record in database
+      // Import hashPassword from auth.ts to ensure passwords are properly hashed
+      const { hashPassword } = require('./auth');
+      
+      // Create properly typed update object
+      const updateData: Partial<InsertUser> = {
+        username: data.username,
+        email: data.email || null
+      };
+      
+      // Only include password if provided (not empty)
+      if (data.password) {
+        updateData.password = await hashPassword(data.password); // Hasher le mot de passe
+      }
+      
+      const [result] = await db.update(users)
+        .set(updateData)
+        .where(eq(users.id, id))
+        .returning();
+      
+      // Update campaign assignments if specified
+      if (data.campaigns) {
+        // In a real implementation, update campaign assignments
+      }
+      
+      return {
+        id: result.id,
+        username: result.username,
+        email: result.email,
+        role: result.role
+      };
+    } catch (error) {
+      console.error("Error in updateAgent:", error);
+      throw error;
     }
-    
-    const [result] = await db.update(users)
-      .set(updateData)
-      .where(eq(users.id, id))
-      .returning();
-    
-    // Update campaign assignments if specified
-    if (data.campaigns) {
-      // In a real implementation, update campaign assignments
-    }
-    
-    return {
-      id: result.id,
-      username: result.username,
-      email: result.email,
-      role: result.role
-    };
   }
   
   async getAgentsStatus(): Promise<{ agents: any[], counts: any }> {
@@ -275,22 +287,22 @@ class DatabaseStorage implements IStorage {
             ...agent_data,
             currentCall: {
               contactName: `Contact ${Math.floor(Math.random() * 100)}`,
-            duration: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
-          }
-        };
-      }
+              duration: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
+            }
+          };
+        }
       
-      return agent_data;
-    });
+        return agent_data;
+      });
     
-    // Calculate counts for each status
-    const counts = {
-      available: agents.filter(a => a.status === "available").length,
-      on_call: agents.filter(a => a.status === "on_call").length,
-      offline: agents.filter(a => a.status === "offline" || a.status === "paused").length
-    };
+      // Calculate counts for each status
+      const counts = {
+        available: agents.filter(a => a.status === "available").length,
+        on_call: agents.filter(a => a.status === "on_call").length,
+        offline: agents.filter(a => a.status === "offline" || a.status === "paused").length
+      };
     
-    return { agents, counts };
+      return { agents, counts };
     } catch (error) {
       console.error("Error in getAgentsStatus:", error);
       // Renvoyer des données par défaut en cas d'erreur pour éviter un échec complet
@@ -302,11 +314,16 @@ class DatabaseStorage implements IStorage {
   }
   
   async updateAgentStatus(agentId: number, status: string): Promise<void> {
-    // Update agent status in database
-    // In a real implementation, this would update the database
-    
-    // For now, just log it
-    console.log(`Agent ${agentId} status updated to ${status}`);
+    try {
+      // Update agent status in database
+      // In a real implementation, this would update the database
+      
+      // For now, just log it
+      console.log(`Agent ${agentId} status updated to ${status}`);
+    } catch (error) {
+      console.error("Error in updateAgentStatus:", error);
+      throw error;
+    }
   }
   
   // Contact/Lead management
@@ -571,11 +588,12 @@ class DatabaseStorage implements IStorage {
   
   // Campaign management
   async getCampaigns(page: number, limit: number, search: string, status: string): Promise<{ campaigns: any[], total: number }> {
-    // Get campaign information from database
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const mockCampaigns = [
+    try {
+      // Get campaign information from database
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockCampaigns = [
       {
         id: 1,
         name: "Assurance Santé Q3",
@@ -673,212 +691,256 @@ class DatabaseStorage implements IStorage {
     const campaigns = filteredCampaigns.slice(startIndex, startIndex + limit);
     
     return { campaigns, total };
+    } catch (error) {
+      console.error("Error in getCampaigns:", error);
+      return { campaigns: [], total: 0 };
+    }
   }
   
   async getCampaignsList(): Promise<any[]> {
-    // Get list of campaigns for dropdowns
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return [
-      { id: 1, name: "Assurance Santé Q3" },
-      { id: 2, name: "Renouvellement Internet" },
-      { id: 3, name: "Étude de marché" },
-      { id: 4, name: "Lancement Mobile 5G" },
-      { id: 5, name: "Satisfaction Client Q2" }
-    ];
+    try {
+      // Get list of campaigns for dropdowns
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return [
+        { id: 1, name: "Assurance Santé Q3" },
+        { id: 2, name: "Renouvellement Internet" },
+        { id: 3, name: "Étude de marché" },
+        { id: 4, name: "Lancement Mobile 5G" },
+        { id: 5, name: "Satisfaction Client Q2" }
+      ];
+    } catch (error) {
+      console.error("Error in getCampaignsList:", error);
+      return [];
+    }
   }
   
   async getCampaign(id: number): Promise<any | undefined> {
-    // Get campaign details by ID
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const campaigns = [
-      {
-        id: 1,
-        name: "Assurance Santé Q3",
-        description: "Campagne pour les nouveaux produits d'assurance santé",
-        scriptId: 1
-      },
-      {
-        id: 2,
-        name: "Renouvellement Internet",
-        description: "Campagne de renouvellement des contrats internet",
-        scriptId: 2
-      },
-      {
-        id: 3,
-        name: "Étude de marché",
-        description: "Sondage pour étude de marché produits tech",
-        scriptId: 3
-      }
-    ];
-    
-    return campaigns.find(c => c.id === id);
+    try {
+      // Get campaign details by ID
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockCampaigns = [
+        {
+          id: 1,
+          name: "Assurance Santé Q3",
+          description: "Campagne pour les nouveaux produits d'assurance santé",
+          scriptId: 1
+        },
+        {
+          id: 2,
+          name: "Renouvellement Internet",
+          description: "Campagne de renouvellement des contrats internet",
+          scriptId: 2
+        },
+        {
+          id: 3,
+          name: "Étude de marché",
+          description: "Sondage pour étude de marché produits tech",
+          scriptId: 3
+        }
+      ];
+      
+      return mockCampaigns.find(c => c.id === id);
+    } catch (error) {
+      console.error("Error in getCampaign:", error);
+      return undefined;
+    }
   }
   
   async createCampaign(campaign: any): Promise<any> {
-    // Create campaign in database
-    // In a real implementation, this would insert into the database
-    
-    // Mocking the response for demonstration
-    return {
-      id: Math.floor(Math.random() * 1000) + 10,
-      name: campaign.name,
-      description: campaign.description,
-      scriptId: campaign.scriptId,
-      startDate: new Date().toISOString().split('T')[0]
-    };
+    try {
+      // Create campaign in database
+      // In a real implementation, this would insert into the database
+      
+      // Mocking the response for demonstration
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        name: campaign.name,
+        description: campaign.description,
+        scriptId: campaign.scriptId,
+        startDate: new Date().toISOString().split('T')[0]
+      };
+    } catch (error) {
+      console.error("Error in createCampaign:", error);
+      throw error;
+    }
   }
   
   // Script management
   async getScripts(page: number, limit: number, search: string): Promise<{ scripts: any[], total: number }> {
-    // Get script information from database
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const mockScripts = [
-      {
-        id: 1,
-        name: "Script Assurance Santé",
-        content: "Bonjour, je m'appelle [Agent]. Je vous appelle de la part de JOBDIAL concernant notre nouvelle offre d'assurance santé. Comment allez-vous aujourd'hui [Client] ?",
-        createdAt: "2023-05-10T09:30:00Z",
-        updatedAt: "2023-06-15T14:20:00Z",
-        campaignsCount: 2,
-        wordCount: 168
-      },
-      {
-        id: 2,
-        name: "Script Renouvellement",
-        content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Je vous contacte au sujet du renouvellement de votre contrat internet qui arrive à échéance prochainement. Avez-vous quelques minutes pour en discuter ?",
-        createdAt: "2023-04-22T11:15:00Z",
-        updatedAt: "2023-05-30T10:05:00Z",
-        campaignsCount: 1,
-        wordCount: 142
-      },
-      {
-        id: 3,
-        name: "Script Étude de Marché",
-        content: "Bonjour, je suis [Agent] de l'institut JOBDIAL. Nous réalisons actuellement une étude de marché sur les produits technologiques et votre avis nous intéresse. Cela ne prendra que 5 minutes de votre temps. Êtes-vous disponible ?",
-        createdAt: "2023-03-15T08:45:00Z",
-        updatedAt: "2023-04-10T16:30:00Z",
-        campaignsCount: 1,
-        wordCount: 192
-      },
-      {
-        id: 4,
-        name: "Script 5G",
-        content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Nous lançons une nouvelle offre mobile 5G avec des tarifs exclusifs pour nos clients fidèles comme vous. Puis-je vous présenter cette offre ?",
-        createdAt: "2023-02-28T13:20:00Z",
-        updatedAt: "2023-03-22T09:10:00Z",
-        campaignsCount: 1,
-        wordCount: 136
-      },
-      {
-        id: 5,
-        name: "Script Satisfaction",
-        content: "Bonjour [Client], je suis [Agent] du service qualité de JOBDIAL. Nous souhaitons recueillir votre niveau de satisfaction concernant nos services. Avez-vous quelques minutes pour répondre à notre enquête ?",
-        createdAt: "2023-01-18T10:00:00Z",
-        updatedAt: "2023-04-05T11:45:00Z",
-        campaignsCount: 1,
-        wordCount: 154
+    try {
+      // Get script information from database
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockScripts = [
+        {
+          id: 1,
+          name: "Script Assurance Santé",
+          content: "Bonjour, je m'appelle [Agent]. Je vous appelle de la part de JOBDIAL concernant notre nouvelle offre d'assurance santé. Comment allez-vous aujourd'hui [Client] ?",
+          createdAt: "2023-05-10T09:30:00Z",
+          updatedAt: "2023-06-15T14:20:00Z",
+          campaignsCount: 2,
+          wordCount: 168
+        },
+        {
+          id: 2,
+          name: "Script Renouvellement",
+          content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Je vous contacte au sujet du renouvellement de votre contrat internet qui arrive à échéance prochainement. Avez-vous quelques minutes pour en discuter ?",
+          createdAt: "2023-04-22T11:15:00Z",
+          updatedAt: "2023-05-30T10:05:00Z",
+          campaignsCount: 1,
+          wordCount: 142
+        },
+        {
+          id: 3,
+          name: "Script Étude de Marché",
+          content: "Bonjour, je suis [Agent] de l'institut JOBDIAL. Nous réalisons actuellement une étude de marché sur les produits technologiques et votre avis nous intéresse. Cela ne prendra que 5 minutes de votre temps. Êtes-vous disponible ?",
+          createdAt: "2023-03-15T08:45:00Z",
+          updatedAt: "2023-04-10T16:30:00Z",
+          campaignsCount: 1,
+          wordCount: 192
+        },
+        {
+          id: 4,
+          name: "Script 5G",
+          content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Nous lançons une nouvelle offre mobile 5G avec des tarifs exclusifs pour nos clients fidèles comme vous. Puis-je vous présenter cette offre ?",
+          createdAt: "2023-02-28T13:20:00Z",
+          updatedAt: "2023-03-22T09:10:00Z",
+          campaignsCount: 1,
+          wordCount: 136
+        },
+        {
+          id: 5,
+          name: "Script Satisfaction",
+          content: "Bonjour [Client], je suis [Agent] du service qualité de JOBDIAL. Nous souhaitons recueillir votre niveau de satisfaction concernant nos services. Avez-vous quelques minutes pour répondre à notre enquête ?",
+          createdAt: "2023-01-18T10:00:00Z",
+          updatedAt: "2023-04-05T11:45:00Z",
+          campaignsCount: 1,
+          wordCount: 154
+        }
+      ];
+      
+      // Apply search filter
+      let filteredScripts = [...mockScripts];
+      
+      if (search) {
+        filteredScripts = filteredScripts.filter(s => 
+          s.name.toLowerCase().includes(search.toLowerCase()) || 
+          s.content.toLowerCase().includes(search.toLowerCase())
+        );
       }
-    ];
-    
-    // Apply search filter
-    let filteredScripts = [...mockScripts];
-    
-    if (search) {
-      filteredScripts = filteredScripts.filter(s => 
-        s.name.toLowerCase().includes(search.toLowerCase()) || 
-        s.content.toLowerCase().includes(search.toLowerCase())
-      );
+      
+      // Apply pagination
+      const total = filteredScripts.length;
+      const startIndex = (page - 1) * limit;
+      const scripts = filteredScripts.slice(startIndex, startIndex + limit);
+      
+      return { scripts, total };
+    } catch (error) {
+      console.error("Error in getScripts:", error);
+      return { scripts: [], total: 0 };
     }
-    
-    // Apply pagination
-    const total = filteredScripts.length;
-    const startIndex = (page - 1) * limit;
-    const scripts = filteredScripts.slice(startIndex, startIndex + limit);
-    
-    return { scripts, total };
   }
   
   async getScriptsList(): Promise<any[]> {
-    // Get list of scripts for dropdowns
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    return [
-      { id: 1, name: "Script Assurance Santé" },
-      { id: 2, name: "Script Renouvellement" },
-      { id: 3, name: "Script Étude de Marché" },
-      { id: 4, name: "Script 5G" },
-      { id: 5, name: "Script Satisfaction" }
-    ];
+    try {
+      // Get list of scripts for dropdowns
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      return [
+        { id: 1, name: "Script Assurance Santé" },
+        { id: 2, name: "Script Renouvellement" },
+        { id: 3, name: "Script Étude de Marché" },
+        { id: 4, name: "Script 5G" },
+        { id: 5, name: "Script Satisfaction" }
+      ];
+    } catch (error) {
+      console.error("Error in getScriptsList:", error);
+      return [];
+    }
   }
   
   async getScript(id: number): Promise<any | undefined> {
-    // Get script by ID
-    // In a real implementation, this would fetch from the database
-    
-    // Mocking the response for demonstration
-    const scripts = [
-      {
-        id: 1,
-        name: "Script Assurance Santé",
-        content: "Bonjour, je m'appelle [Agent]. Je vous appelle de la part de JOBDIAL concernant notre nouvelle offre d'assurance santé. Comment allez-vous aujourd'hui [Client] ?\n\nNotre offre exclusive inclut une couverture complète pour toute votre famille avec des tarifs préférentiels. Seriez-vous intéressé(e) par plus d'informations ?\n\nSi oui : Super ! Je vais vous expliquer les détails de notre formule. Elle comprend...\n\nSi non : Puis-je savoir quelle est votre assurance actuelle ? Peut-être pourrions-nous vous proposer une offre plus avantageuse."
-      },
-      {
-        id: 2,
-        name: "Script Renouvellement",
-        content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Je vous contacte au sujet du renouvellement de votre contrat internet qui arrive à échéance prochainement. Avez-vous quelques minutes pour en discuter ?\n\nNous souhaitons vous proposer notre nouvelle offre fibre à 1Gb/s avec un tarif spécial renouvellement à seulement 29,99€ par mois pendant 12 mois, puis 39,99€. C'est une économie de 10€ par mois par rapport à votre forfait actuel.\n\nQu'en pensez-vous ?"
-      },
-      {
-        id: 3,
-        name: "Script Étude de Marché",
-        content: "Bonjour, je suis [Agent] de l'institut JOBDIAL. Nous réalisons actuellement une étude de marché sur les produits technologiques et votre avis nous intéresse. Cela ne prendra que 5 minutes de votre temps. Êtes-vous disponible ?\n\nQuestions :\n1. Possédez-vous un smartphone ? Si oui, quelle marque ?\n2. À quelle fréquence changez-vous de téléphone ?\n3. Quel budget consacrez-vous à l'achat d'un nouveau téléphone ?\n4. Quelles sont les fonctionnalités les plus importantes pour vous ?\n\nMerci beaucoup pour votre participation !"
-      }
-    ];
-    
-    return scripts.find(s => s.id === id);
+    try {
+      // Get script by ID
+      // In a real implementation, this would fetch from the database
+      
+      // Mocking the response for demonstration
+      const mockScripts = [
+        {
+          id: 1,
+          name: "Script Assurance Santé",
+          content: "Bonjour, je m'appelle [Agent]. Je vous appelle de la part de JOBDIAL concernant notre nouvelle offre d'assurance santé. Comment allez-vous aujourd'hui [Client] ?\n\nNotre offre exclusive inclut une couverture complète pour toute votre famille avec des tarifs préférentiels. Seriez-vous intéressé(e) par plus d'informations ?\n\nSi oui : Super ! Je vais vous expliquer les détails de notre formule. Elle comprend...\n\nSi non : Puis-je savoir quelle est votre assurance actuelle ? Peut-être pourrions-nous vous proposer une offre plus avantageuse."
+        },
+        {
+          id: 2,
+          name: "Script Renouvellement",
+          content: "Bonjour [Client], c'est [Agent] de JOBDIAL. Je vous contacte au sujet du renouvellement de votre contrat internet qui arrive à échéance prochainement. Avez-vous quelques minutes pour en discuter ?\n\nNous souhaitons vous proposer notre nouvelle offre fibre à 1Gb/s avec un tarif spécial renouvellement à seulement 29,99€ par mois pendant 12 mois, puis 39,99€. C'est une économie de 10€ par mois par rapport à votre forfait actuel.\n\nQu'en pensez-vous ?"
+        },
+        {
+          id: 3,
+          name: "Script Étude de Marché",
+          content: "Bonjour, je suis [Agent] de l'institut JOBDIAL. Nous réalisons actuellement une étude de marché sur les produits technologiques et votre avis nous intéresse. Cela ne prendra que 5 minutes de votre temps. Êtes-vous disponible ?\n\nQuestions :\n1. Possédez-vous un smartphone ? Si oui, quelle marque ?\n2. À quelle fréquence changez-vous de téléphone ?\n3. Quel budget consacrez-vous à l'achat d'un nouveau téléphone ?\n4. Quelles sont les fonctionnalités les plus importantes pour vous ?\n\nMerci beaucoup pour votre participation !"
+        }
+      ];
+      
+      return mockScripts.find(s => s.id === id);
+    } catch (error) {
+      console.error("Error in getScript:", error);
+      return undefined;
+    }
   }
   
   async createScript(script: any): Promise<any> {
-    // Create script in database
-    // In a real implementation, this would insert into the database
-    
-    // Calculate word count
-    const wordCount = script.content.split(/\s+/).length;
-    
-    // Mocking the response for demonstration
-    return {
-      id: Math.floor(Math.random() * 1000) + 10,
-      name: script.name,
-      content: script.content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      campaignsCount: 0,
-      wordCount
-    };
+    try {
+      // Create script in database
+      // In a real implementation, this would insert into the database
+      
+      // Calculate word count
+      const wordCount = script.content.split(/\s+/).length;
+      
+      // Mocking the response for demonstration
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        name: script.name,
+        content: script.content,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        campaignsCount: 0,
+        wordCount
+      };
+    } catch (error) {
+      console.error("Error in createScript:", error);
+      throw error;
+    }
   }
   
   async updateScript(id: number, script: any): Promise<any> {
-    // Update script in database
-    // In a real implementation, this would update the database
-    
-    // Calculate word count
-    const wordCount = script.content.split(/\s+/).length;
-    
-    // Mocking the response for demonstration
-    return {
-      id,
-      name: script.name,
-      content: script.content,
-      updatedAt: new Date().toISOString(),
-      campaignsCount: 1,
-      wordCount
-    };
+    try {
+      // Update script in database
+      // In a real implementation, this would update the database
+      
+      // Calculate word count
+      const wordCount = script.content.split(/\s+/).length;
+      
+      // Mocking the response for demonstration
+      return {
+        id,
+        name: script.name,
+        content: script.content,
+        updatedAt: new Date().toISOString(),
+        campaignsCount: 1,
+        wordCount
+      };
+    } catch (error) {
+      console.error("Error in updateScript:", error);
+      throw error;
+    }
   }
   
   async deleteScript(id: number): Promise<void> {
