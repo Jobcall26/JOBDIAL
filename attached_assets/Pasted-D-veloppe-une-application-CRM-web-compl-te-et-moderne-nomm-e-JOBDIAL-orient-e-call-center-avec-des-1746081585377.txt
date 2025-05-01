@@ -1,0 +1,145 @@
+Développe une application CRM web complète et moderne nommée JOBDIAL, orientée call center, avec des fonctionnalités similaires à Vicidial, mais bâtie avec des technologies web modernes.
+
+L'application doit être conçue pour permettre :
+
+La gestion d’agents de centre d’appel
+
+La réalisation d’appels VoIP via Twilio/WebRTC
+
+La supervision des campagnes d’appels
+
+L’affichage de scripts en temps réel pendant les appels
+
+Le suivi des performances, contacts, et historiques
+
+🧱 Technologies :
+Frontend : React.js + Tailwind CSS
+
+Backend : Node.js avec Express.js
+
+Base de données : PostgreSQL
+
+Appels VoIP : Twilio (API programmable voice) ou WebRTC
+
+Temps réel : WebSockets avec Socket.io
+
+Authentification : JWT (JSON Web Tokens) + Bcrypt
+
+Style visuel : dégradé #5170FF → #FF66C4
+
+🧩 Fonctionnalités principales à implémenter :
+1. Gestion des utilisateurs
+Deux rôles : admin (unique) et agent
+
+Seul l’admin peut créer, modifier ou supprimer des agents
+
+2. Interface agent (Softphone)
+Connexion/déconnexion d’agent
+
+Statut d’agent : disponible / en appel / en pause
+
+Intégration d’un softphone (Twilio ou WebRTC)
+
+Fiche contact + script d’appel affiché automatiquement
+
+Boutons de fin d’appel : Rappel / Intéressé / Refusé / Absent
+
+3. Campagnes d’appels
+Création de campagnes (admin)
+
+Import de leads (CSV)
+
+Affectation des leads à agents
+
+Assignation d’un script à une campagne
+
+4. Scripts d’appel
+Module d’édition de scripts (admin)
+
+Scripts associés aux campagnes
+
+Affichage en direct pendant appel côté agent
+
+5. Historique d’appels
+Journal par appel : agent, lead, date, durée, résultat
+
+Accès admin + agent (historique personnel)
+
+Enregistrement de l’appel (optionnel via Twilio)
+
+6. Supervision en temps réel
+Admin peut voir en live :
+
+Statuts des agents
+
+Appels en cours
+
+Files d’attente
+
+Leads non contactés
+
+7. Tableau de bord (KPIs)
+Total d’appels (global / par agent)
+
+Statuts des appels
+
+Moyenne de durée
+
+Taux de réussite par campagne
+
+8. Notifications & alertes
+Toasts et alertes côté agent
+
+Notifications admin : agents inactifs, erreurs appel, leads épuisés
+
+🎨 UI/UX & Design
+Design responsive mobile / desktop
+
+Utilise Tailwind CSS avec bg-gradient-to-r from-[#5170FF] to-[#FF66C4]
+
+Sidebar avec icônes (contacts, campagnes, agents, supervision, etc.)
+
+Composants réutilisables : boutons, tableaux, formulaires
+
+🔐 Sécurité
+Authentification JWT + refresh token
+
+Middleware auth + isAdmin
+
+Sécurisation des routes API backend
+
+Rôles et permissions strictes
+
+📦 Structure projet recommandée
+pgsql
+Copier
+Modifier
+jobdial/
+├── backend/
+│   ├── routes/
+│   ├── controllers/
+│   ├── models/
+│   ├── middleware/
+│   └── server.js
+├── frontend/
+│   ├── pages/
+│   ├── components/
+│   └── App.jsx
+├── database/
+│   ├── schema.sql
+│   └── seed.sql
+└── .env
+🚀 Objectif final
+Créer une application CRM type call center moderne, avec :
+
+Gestion d’agents
+
+Appels VoIP sortants automatisés
+
+Scripts dynamiques
+
+Supervision en temps réel
+
+Interfaces propres et sécurisées
+
+Hébergement possible sur Replit, Railway, Render, Vercel
