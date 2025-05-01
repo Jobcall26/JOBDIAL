@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   useQuery,
   useMutation,
@@ -33,6 +33,12 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
+  console.log("AuthProvider initializing");
+  
+  useEffect(() => {
+    console.log("AuthProvider mounted");
+  }, []);
+  
   const {
     data: user,
     error,
@@ -40,14 +46,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<User | null, Error>({
     queryKey: ["/api/auth/me"],
     queryFn: getQueryFn({ on401: "returnNull" }),
+    onSuccess: (data) => {
+      console.log("Auth query success:", data);
+    },
+    onError: (err) => {
+      console.error("Auth query error:", err);
+    }
   });
+
+  // Log auth state changes
+  useEffect(() => {
+    console.log("Auth state updated:", { user, isLoading, error });
+  }, [user, isLoading, error]);
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/auth/login", credentials);
-      return await res.json();
+      console.log("Attempting login with:", credentials.username);
+      try {
+        const res = await apiRequest("POST", "/api/auth/login", credentials);
+        console.log("Login response status:", res.status);
+        return await res.json();
+      } catch (err) {
+        console.error("Login request failed:", err);
+        throw err;
+      }
     },
     onSuccess: (user: User) => {
+      console.log("Login successful for:", user.username);
       queryClient.setQueryData(["/api/auth/me"], user);
       toast({
         title: "Connexion réussie",
@@ -55,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Login error:", error);
       toast({
         title: "Échec de la connexion",
         description: error.message,
@@ -65,10 +91,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterData) => {
-      const res = await apiRequest("POST", "/api/auth/register", credentials);
-      return await res.json();
+      console.log("Attempting registration for:", credentials.username);
+      try {
+        const res = await apiRequest("POST", "/api/auth/register", credentials);
+        console.log("Registration response status:", res.status);
+        return await res.json();
+      } catch (err) {
+        console.error("Registration request failed:", err);
+        throw err;
+      }
     },
     onSuccess: (user: User) => {
+      console.log("Registration successful for:", user.username);
       queryClient.setQueryData(["/api/auth/me"], user);
       toast({
         title: "Inscription réussie",
@@ -76,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Registration error:", error);
       toast({
         title: "Échec de l'inscription",
         description: error.message,
@@ -86,9 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/auth/logout");
+      console.log("Attempting logout");
+      try {
+        await apiRequest("POST", "/api/auth/logout");
+      } catch (err) {
+        console.error("Logout request failed:", err);
+        throw err;
+      }
     },
     onSuccess: () => {
+      console.log("Logout successful");
       queryClient.setQueryData(["/api/auth/me"], null);
       toast({
         title: "Déconnexion réussie",
@@ -96,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Logout error:", error);
       toast({
         title: "Échec de la déconnexion",
         description: error.message,
@@ -123,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
+    console.error("useAuth hook used outside of AuthProvider");
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
