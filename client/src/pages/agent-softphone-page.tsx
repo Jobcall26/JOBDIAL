@@ -179,6 +179,7 @@ export default function AgentSoftphonePage() {
                 <TabsList className="w-full">
                   <TabsTrigger value="auto" className="flex-1">Auto</TabsTrigger>
                   <TabsTrigger value="manual" className="flex-1">Manuel</TabsTrigger>
+                  <TabsTrigger value="predictive" className="flex-1">Prédictif</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="auto" className="space-y-4 mt-4">
@@ -259,6 +260,85 @@ export default function AgentSoftphonePage() {
                       <PhoneCall className="mr-2 h-4 w-4" />
                       Appeler
                     </Button>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="predictive" className="space-y-4 mt-4">
+                  <Card className="border-2 border-amber-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Mode Composeur Prédictif</CardTitle>
+                      <CardDescription>
+                        Le composeur prédictif appelle automatiquement plusieurs contacts en même temps, optimisant le temps des agents.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium mb-1 block">Campagne</label>
+                          <select className="w-full p-2 border rounded-md">
+                            {campaigns?.map(campaign => (
+                              <option key={campaign.id} value={campaign.id}>{campaign.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium mb-1 block">Niveau d'agressivité</label>
+                          <select className="w-full p-2 border rounded-md">
+                            <option value="1">Bas (1.0 - appels par agent)</option>
+                            <option value="1.3">Moyen (1.3 - appels par agent)</option>
+                            <option value="1.5">Elevé (1.5 - appels par agent)</option>
+                            <option value="2">Maximum (2.0 - appels par agent)</option>
+                          </select>
+                        </div>
+                        
+                        <div className="border rounded-md p-3 bg-yellow-50">
+                          <div className="flex items-center text-sm text-amber-800 font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                            </svg>
+                            Attention: Mode prédictif
+                          </div>
+                          <div className="text-xs text-amber-700 mt-1">
+                            En mode prédictif, le système appellera automatiquement plusieurs contacts pour maximiser votre temps de conversation. Vous recevrez un appel dès qu'un contact répond.
+                          </div>
+                        </div>
+                        
+                        <div className="pt-2">
+                          <Button 
+                            className="w-full bg-amber-600 hover:bg-amber-700"
+                            onClick={() => alert('Mode prédictif activé ! Cette fonctionnalité n\'est pas encore complètement implémentée.')}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                              <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+                            </svg>
+                            Activer le mode prédictif
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <div className="p-4 bg-neutral-lightest rounded-lg">
+                    <div className="font-medium mb-2">Statistiques du composeur</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-neutral-dark">Appels lancés</div>
+                        <div className="font-bold">0</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-dark">Appels répondus</div>
+                        <div className="font-bold">0</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-dark">Taux de contact</div>
+                        <div className="font-bold">0%</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-dark">Attente moyenne</div>
+                        <div className="font-bold">0s</div>
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -430,16 +510,44 @@ export default function AgentSoftphonePage() {
                         </Button>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-3 mb-3">
-                        <Button variant="secondary" className="h-10 text-xs">
-                          Transférer
-                        </Button>
-                        <Button variant="secondary" className="h-10 text-xs">
-                          Conférence
-                        </Button>
-                        <Button variant="secondary" className="h-10 text-xs">
-                          Attente
-                        </Button>
+                      <div className="grid grid-cols-1 gap-3 mb-3">
+                        <div className="border rounded-lg p-3 bg-blue-50">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-sm font-medium text-blue-800">Transfert & Conférence</div>
+                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">ViciDial</Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                              <label className="text-xs font-medium text-blue-800 mb-1 block">Type</label>
+                              <select className="w-full p-2 border border-blue-200 rounded-md text-sm">
+                                <option value="warm">Transfert chaud</option>
+                                <option value="cold">Transfert froid</option>
+                                <option value="conference">Conférence à 3</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-blue-800 mb-1 block">Destination</label>
+                              <select className="w-full p-2 border border-blue-200 rounded-md text-sm">
+                                <option value="internal">Agent interne</option>
+                                <option value="external">Numéro externe</option>
+                                <option value="ivr">IVR / File d'attente</option>
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-2">
+                            <Button variant="outline" className="text-xs h-8 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                              Transférer
+                            </Button>
+                            <Button variant="outline" className="text-xs h-8 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                              Conférence
+                            </Button>
+                            <Button variant="outline" className="text-xs h-8 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                              Attente
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="bg-gray-50 p-2 rounded-md mb-3">
