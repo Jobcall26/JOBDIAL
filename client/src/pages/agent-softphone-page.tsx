@@ -393,33 +393,65 @@ export default function AgentSoftphonePage() {
                       </div>
                     </div>
                     
-                    {/* Call Controls */}
-                    <div className="pt-4 border-t grid grid-cols-2 gap-4">
-                      <div className="flex justify-center">
+                    {/* Call Controls - style ViciDial */}
+                    <div className="pt-4 border-t">
+                      <div className="grid grid-cols-4 gap-3 mb-3">
                         <Button 
                           variant="outline" 
-                          className={`w-12 h-12 rounded-full ${micMuted ? 'bg-neutral-light' : ''}`}
+                          className={`h-12 ${micMuted ? 'bg-neutral-light' : ''}`}
                           onClick={toggleMic}
                         >
                           {micMuted ? (
-                            <MicOff className="h-5 w-5 text-neutral-dark" />
+                            <MicOff className="h-5 w-5 mr-1 text-neutral-dark" />
                           ) : (
-                            <Mic className="h-5 w-5" />
+                            <Mic className="h-5 w-5 mr-1" />
                           )}
+                          Micro
                         </Button>
-                      </div>
-                      <div className="flex justify-center">
                         <Button 
                           variant="outline" 
-                          className={`w-12 h-12 rounded-full ${speakerMuted ? 'bg-neutral-light' : ''}`}
+                          className={`h-12 ${speakerMuted ? 'bg-neutral-light' : ''}`}
                           onClick={toggleSpeaker}
                         >
                           {speakerMuted ? (
-                            <VolumeX className="h-5 w-5 text-neutral-dark" />
+                            <VolumeX className="h-5 w-5 mr-1 text-neutral-dark" />
                           ) : (
-                            <Volume2 className="h-5 w-5" />
+                            <Volume2 className="h-5 w-5 mr-1" />
                           )}
+                          Audio
                         </Button>
+                        <Button variant="outline" className="h-12">
+                          <Clock className="h-5 w-5 mr-1" />
+                          Pause
+                        </Button>
+                        <Button variant="outline" className="h-12">
+                          <Mic className="h-5 w-5 mr-1" />
+                          Enreg.
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-3 mb-3">
+                        <Button variant="secondary" className="h-10 text-xs">
+                          Transférer
+                        </Button>
+                        <Button variant="secondary" className="h-10 text-xs">
+                          Conférence
+                        </Button>
+                        <Button variant="secondary" className="h-10 text-xs">
+                          Attente
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-2 rounded-md mb-3">
+                        <div className="text-xs font-medium mb-1">Raccourcis clavier</div>
+                        <div className="grid grid-cols-3 gap-1 text-xs">
+                          <div><span className="font-bold">F1</span>: Aide</div>
+                          <div><span className="font-bold">F2</span>: Réponse rapide</div>
+                          <div><span className="font-bold">F3</span>: Script</div>
+                          <div><span className="font-bold">F4</span>: Pause</div>
+                          <div><span className="font-bold">F5</span>: Transfert</div>
+                          <div><span className="font-bold">F6</span>: Raccrocher</div>
+                        </div>
                       </div>
                     </div>
                     

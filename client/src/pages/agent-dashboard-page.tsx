@@ -84,31 +84,67 @@ export default function AgentDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <Badge
-                  className={`${softphoneStatus === "ready" ? "bg-green-500" : "bg-red-500"}`}
-                >
-                  {softphoneStatus === "ready" ? "Connecté" : "Déconnecté"}
-                </Badge>
-                {softphoneStatus !== "ready" && (
-                  <Button
-                    onClick={connect}
-                    size="sm"
-                    className="mt-2"
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Badge
+                    className={`${softphoneStatus === "ready" ? "bg-green-500" : "bg-red-500"}`}
                   >
-                    Se connecter
-                  </Button>
+                    {softphoneStatus === "ready" ? "Connecté" : "Déconnecté"}
+                  </Badge>
+                  {softphoneStatus !== "ready" && (
+                    <Button
+                      onClick={connect}
+                      size="sm"
+                      className="mt-2"
+                    >
+                      Se connecter
+                    </Button>
+                  )}
+                </div>
+                {isCallInProgress && (
+                  <div className="text-right">
+                    <div className="text-xs text-neutral-dark">Appel en cours</div>
+                    <div className="text-lg font-bold text-primary animate-pulse">
+                      {formatTime(callTime)}
+                    </div>
+                  </div>
                 )}
               </div>
-              {isCallInProgress && (
-                <div className="text-right">
-                  <div className="text-xs text-neutral-dark">Appel en cours</div>
-                  <div className="text-lg font-bold text-primary animate-pulse">
-                    {formatTime(callTime)}
-                  </div>
+              
+              {/* Statut de l'agent comme dans ViciDial */}
+              <div>
+                <div className="text-xs font-medium mb-2">Statut agent</div>
+                <select 
+                  className="w-full p-2 text-sm rounded-md border border-neutral-200"
+                  defaultValue="available"
+                >
+                  <option value="available">Disponible</option>
+                  <option value="lunch">Pause déjeuner</option>
+                  <option value="break">Pause café</option>
+                  <option value="training">Formation</option>
+                  <option value="meeting">Réunion</option>
+                  <option value="admin">Tâches administratives</option>
+                </select>
+              </div>
+              
+              {/* Qualité de l'appel */}
+              <div className="flex justify-between items-center">
+                <div className="text-xs font-medium">Qualité du signal</div>
+                <div className="flex gap-1">
+                  <div className="h-2 w-1 bg-green-500 rounded-sm"></div>
+                  <div className="h-3 w-1 bg-green-500 rounded-sm"></div>
+                  <div className="h-4 w-1 bg-green-500 rounded-sm"></div>
+                  <div className="h-5 w-1 bg-green-500 rounded-sm"></div>
+                  <div className="h-6 w-1 bg-green-400 rounded-sm"></div>
                 </div>
-              )}
+              </div>
+              
+              {/* Latence */}
+              <div className="flex justify-between text-xs">
+                <span>Latence</span>
+                <span className="font-medium">45ms</span>
+              </div>
             </div>
           </CardContent>
         </Card>

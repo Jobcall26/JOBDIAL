@@ -214,9 +214,33 @@ export default function AgentScriptsPage() {
               <CardContent className="space-y-6">
                 {/* Introduction */}
                 <div className="space-y-2">
-                  <div className="font-medium text-lg">Introduction</div>
-                  <div className="border rounded-lg p-4 bg-neutral-lightest">
+                  <div className="font-medium text-lg flex justify-between items-center">
+                    <span>Introduction</span>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                        <span className="mr-1 font-bold">F2</span> Copier
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                        Auto <span className="ml-1 font-bold">F3</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-neutral-lightest relative">
+                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-medium py-1 px-2 rounded-bl-lg">
+                      Script actif
+                    </div>
                     <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: scriptContent.content }} />
+                  </div>
+                  <div className="mt-2 bg-gray-50 p-3 rounded-md border border-gray-100 text-sm">
+                    <div className="font-medium mb-1">Informations contextuelles</div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      <div><span className="font-medium">Contact:</span> Pierre Durand</div>
+                      <div><span className="font-medium">Téléphone:</span> +33612345678</div>
+                      <div><span className="font-medium">Dernier contact:</span> 15/04/2025</div>
+                      <div><span className="font-medium">Résultat précédent:</span> Rappel</div>
+                      <div><span className="font-medium">Entreprise:</span> ABC Corp</div>
+                      <div><span className="font-medium">Campagne:</span> Assurance Santé Q3</div>
+                    </div>
                   </div>
                 </div>
                 
