@@ -6,11 +6,29 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useSoftphone } from "@/hooks/use-softphone";
-import { useQuery } from "@tanstack/react-query";
-import { PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { useSounds } from "@/hooks/use-sounds";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AgentSoftphonePage() {
   const { user } = useAuth();
