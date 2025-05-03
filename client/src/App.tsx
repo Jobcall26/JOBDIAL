@@ -116,10 +116,15 @@ function App() {
   useEffect(() => {
     console.log("App component mounted");
     
-    // Debug API connectivity
+    // Debug API connectivity and force redirect to auth page if not authenticated
     fetch("/api/auth/me", { credentials: "include" })
       .then(res => {
         console.log("Auth check response status:", res.status);
+        if (res.status === 401) {
+          // Redirect to auth page if not authenticated
+          window.location.href = "/auth";
+          return { error: "Not authenticated" };
+        }
         return res.json().catch(() => ({ error: "Invalid JSON" }));
       })
       .then(data => console.log("Auth check response data:", data))
