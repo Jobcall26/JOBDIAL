@@ -180,6 +180,7 @@ export default function AgentSoftphonePage() {
                   <TabsTrigger value="auto" className="flex-1">Auto</TabsTrigger>
                   <TabsTrigger value="manual" className="flex-1">Manuel</TabsTrigger>
                   <TabsTrigger value="predictive" className="flex-1">Prédictif</TabsTrigger>
+                  <TabsTrigger value="queue" className="flex-1">File d'attente</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="auto" className="space-y-4 mt-4">
@@ -341,6 +342,121 @@ export default function AgentSoftphonePage() {
                     </div>
                   </div>
                 </TabsContent>
+                
+                <TabsContent value="queue" className="space-y-4 mt-4">
+                  <Card className="border-2 border-purple-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">File d'Attente Intelligente</CardTitle>
+                      <CardDescription>
+                        Reçoit et traite les appels entrants et les transferts selon des règles de routage intelligentes.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="border rounded-lg p-3 bg-purple-50">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="text-sm font-medium text-purple-800">Mon statut dans la file</div>
+                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                              Disponible
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                              <label className="text-xs font-medium text-purple-800 mb-1 block">File d'attente</label>
+                              <select className="w-full p-2 border border-purple-200 rounded-md text-sm">
+                                <option value="all">Toutes les files</option>
+                                <option value="1">Service client</option>
+                                <option value="2">Support technique</option>
+                                <option value="3">Commercial</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-purple-800 mb-1 block">Compétences</label>
+                              <div className="flex flex-wrap gap-1">
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">Français</Badge>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">Santé</Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-purple-800 mb-1 block">Position dans les files</label>
+                            <div className="border rounded-md bg-white p-2">
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div>
+                                  <div className="font-medium">Service client</div>
+                                  <div>Position: 3</div>
+                                </div>
+                                <div>
+                                  <div className="font-medium">Support technique</div>
+                                  <div>Position: 2</div>
+                                </div>
+                                <div>
+                                  <div className="font-medium">Commercial</div>
+                                  <div>Position: 1</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-3 flex justify-between">
+                            <Button variant="outline" size="sm" className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+                                <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM9.25 4.065A8.963 8.963 0 005 3c-.85 0-1.673.118-2.454.339A.75.75 0 002 4.06v11a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.065z" />
+                              </svg>
+                              Mes files
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+                                <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                              </svg>
+                              Paramètres
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="font-medium mb-2">Statistiques de file d'attente</div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <div className="text-neutral-dark">Temps moyen d'attente</div>
+                              <div className="font-bold">1m 45s</div>
+                            </div>
+                            <div>
+                              <div className="text-neutral-dark">Appels en attente</div>
+                              <div className="font-bold">4</div>
+                            </div>
+                            <div>
+                              <div className="text-neutral-dark">Agents disponibles</div>
+                              <div className="font-bold">3</div>
+                            </div>
+                            <div>
+                              <div className="text-neutral-dark">Ma durée moyenne</div>
+                              <div className="font-bold">3m 12s</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-2 grid grid-cols-2 gap-2">
+                          <Button 
+                            className="bg-purple-600 hover:bg-purple-700"
+                            onClick={() => alert('Rejoindre la file ! Cette fonctionnalité sera bientôt implémentée.')}
+                          >
+                            Rejoindre la file
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="border-red-300 text-red-700"
+                            onClick={() => alert('Quitter la file ! Cette fonctionnalité sera bientôt implémentée.')}
+                          >
+                            Quitter la file
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
@@ -384,29 +500,104 @@ export default function AgentSoftphonePage() {
                   </CardHeader>
                   
                   <CardContent className="space-y-4 flex flex-col h-[calc(100%-200px)]">
-                    {/* Contact Information */}
+                    {/* Contact Information - Style ViciDial complet */}
                     {currentCall?.contactId && (
-                      <Card className="bg-neutral-lightest">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-4">
-                            <div className="bg-neutral-light h-12 w-12 rounded-full flex items-center justify-center">
-                              <User className="h-6 w-6 text-neutral-dark" />
+                      <Card className="bg-neutral-lightest border-blue-200">
+                        <CardHeader className="pb-2 border-b bg-blue-50 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-blue-100 h-8 w-8 rounded-full flex items-center justify-center">
+                              <User className="h-5 w-5 text-blue-700" />
                             </div>
                             <div>
-                              <div className="font-medium">{currentCall.contactName}</div>
-                              <div className="text-sm">{currentCall.contactPhone}</div>
-                              {currentCall.contactCompany && (
-                                <div className="text-sm text-neutral-dark">{currentCall.contactCompany}</div>
-                              )}
-                              <div className="flex gap-2 mt-1">
-                                {currentCall.contactLastCallDate && (
-                                  <Badge variant="outline" className="text-xs">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    Dernier appel: {currentCall.contactLastCallDate}
-                                  </Badge>
-                                )}
+                              <CardTitle className="text-base">{currentCall.contactName}</CardTitle>
+                              <div className="text-sm text-blue-700">
+                                {currentCall.contactPhone} - {currentCall.campaignName || "Campagne inconnue"}
                               </div>
                             </div>
+                          </div>
+                          <Badge variant="outline" className="border-blue-200 bg-white">
+                            ID: {currentCall.contactId}
+                          </Badge>
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                            {/* Informations personnelles */}
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Nom complet</div>
+                              <div className="font-medium">{currentCall.contactName}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Téléphone</div>
+                              <div className="font-medium">{currentCall.contactPhone}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Email</div>
+                              <div className="font-medium">{currentCall.contactEmail || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Entreprise</div>
+                              <div className="font-medium">{currentCall.contactCompany || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Fonction</div>
+                              <div className="font-medium">{currentCall.contactJobTitle || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Date de naissance</div>
+                              <div className="font-medium">{currentCall.contactBirthdate || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Adresse</div>
+                              <div className="font-medium">{currentCall.contactAddress || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Ville</div>
+                              <div className="font-medium">{currentCall.contactCity || "Non renseigné"}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-neutral-dark mb-1">Code postal</div>
+                              <div className="font-medium">{currentCall.contactZipCode || "Non renseigné"}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t pt-3 mt-2">
+                            <div className="text-xs font-medium text-neutral-dark mb-1">Historique de contact</div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <div className="border rounded-md p-2 bg-gray-50">
+                                <div className="text-xs font-medium">Dernier contact</div>
+                                <div className="text-sm">{currentCall.contactLastCallDate || "Aucun"}</div>
+                              </div>
+                              <div className="border rounded-md p-2 bg-gray-50">
+                                <div className="text-xs font-medium">Résultat précédent</div>
+                                <div className="text-sm">{currentCall.contactLastCallResult || "Aucun"}</div>
+                              </div>
+                              <div className="border rounded-md p-2 bg-gray-50">
+                                <div className="text-xs font-medium">Nombre d'appels</div>
+                                <div className="text-sm">{currentCall.contactCallCount || "0"}</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t pt-3 mt-2">
+                            <div className="text-xs font-medium text-neutral-dark mb-1">Informations supplémentaires</div>
+                            <div className="border rounded-md p-2 bg-white text-sm">
+                              {currentCall.contactNotes || "Aucune note supplémentaire"}
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" className="text-xs h-7">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+                                <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                              </svg>
+                              Modifier
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-xs h-7">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                              </svg>
+                              Plus d'infos
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -461,15 +652,71 @@ export default function AgentSoftphonePage() {
                         ) : null}
                       </AnimatePresence>
                       
-                      {/* Call Notes */}
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Notes d'appel</label>
-                        <Textarea 
-                          placeholder="Saisir vos notes d'appel ici..." 
-                          value={callNotes} 
-                          onChange={e => setCallNotes(e.target.value)}
-                          className="h-24"
-                        />
+                      {/* Formulaires personnalisés par campagne - style ViciDial */}
+                      <div className="space-y-4">
+                        <div className="border rounded-lg p-3 bg-green-50">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="text-sm font-medium text-green-800">Formulaire de campagne</div>
+                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Assurance Santé</Badge>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Situation actuelle</label>
+                                <select className="w-full p-2 border rounded-md text-sm">
+                                  <option value="">Sélectionner...</option>
+                                  <option value="has_insurance">Déjà assuré</option>
+                                  <option value="no_insurance">Non assuré</option>
+                                  <option value="looking">En recherche</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Intérêt produit</label>
+                                <select className="w-full p-2 border rounded-md text-sm">
+                                  <option value="">Sélectionner...</option>
+                                  <option value="basic">Formule Basic</option>
+                                  <option value="comfort">Formule Confort</option>
+                                  <option value="premium">Formule Premium</option>
+                                  <option value="no_interest">Pas intéressé</option>
+                                </select>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Budget mensuel</label>
+                                <input type="number" className="w-full p-2 border rounded-md text-sm" placeholder="Ex: 50" />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Nombre de personnes</label>
+                                <input type="number" className="w-full p-2 border rounded-md text-sm" placeholder="Ex: 2" />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="text-xs font-medium mb-1 block">Pathologies déclarées</label>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="bg-white border cursor-pointer hover:bg-gray-50">Aucune</Badge>
+                                <Badge className="bg-white border cursor-pointer hover:bg-gray-50">Diabète</Badge>
+                                <Badge className="bg-white border cursor-pointer hover:bg-gray-50">Hypertension</Badge>
+                                <Badge className="bg-white border cursor-pointer hover:bg-gray-50">Asthme</Badge>
+                                <Badge className="bg-white border cursor-pointer hover:bg-gray-50">Autre</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      
+                        {/* Call Notes */}
+                        <div>
+                          <label className="text-sm font-medium mb-1 block">Notes d'appel</label>
+                          <Textarea 
+                            placeholder="Saisir vos notes d'appel ici..." 
+                            value={callNotes} 
+                            onChange={e => setCallNotes(e.target.value)}
+                            className="h-24"
+                          />
+                        </div>
                       </div>
                     </div>
                     
