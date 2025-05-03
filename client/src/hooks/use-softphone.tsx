@@ -1,8 +1,9 @@
-import { createContext, ReactNode, useContext, useState, useCallback } from "react";
+import { createContext, ReactNode, useContext, useState, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useWebSocket } from "./use-websocket";
 import { useToast } from "./use-toast";
+import { useSounds } from "./use-sounds";
 
 type SoftphoneStatus = "disconnected" | "connecting" | "ready" | "on-call";
 
@@ -30,9 +31,19 @@ const SoftphoneContext = createContext<SoftphoneContextType | null>(null);
 export function SoftphoneProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { sendMessage, lastMessage, isConnected } = useWebSocket();
+  const { playSound } = useSounds();
   const [status, setStatus] = useState<SoftphoneStatus>("disconnected");
   const [error, setError] = useState<string | null>(null);
   const [currentCall, setCurrentCall] = useState<Call | null>(null);
+  
+  // Effet pour jouer des sons lors des changements de statut
+  useEffect(() => {
+    if (status === "ready") {
+      playSound('statusChanged');
+    } else if (status === "on-call") {
+      playSound('incomingCall');
+    }
+  }, [status, playSound]);
 
   // Mutation to connect the softphone
   const connectMutation = useMutation({
@@ -119,11 +130,15 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
         data: { status: "available" },
       });
       
+      // Jouer le son de fin d'appel
+      playSound('callEnded');
+      
       // Refresh calls list
       queryClient.invalidateQueries({ queryKey: ["/api/calls"] });
     },
     onError: (error) => {
       setError(error.message);
+      playSound('error');
       toast({
         title: "Erreur de fin d'appel",
         description: error.message,
@@ -140,6 +155,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
       case "incoming":
         setStatus("on-call");
         setCurrentCall(call);
+        playSound('incomingCall');
         toast({
           title: "Appel entrant",
           description: `Appel de ${call.contactName}`,
@@ -149,6 +165,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
       case "ended":
         setStatus("ready");
         setCurrentCall(null);
+        playSound('callEnded');
         break;
       
       default:
