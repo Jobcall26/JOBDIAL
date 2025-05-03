@@ -1,7 +1,8 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -65,16 +66,40 @@ function WelcomeHandler() {
 
 function Router() {
   console.log("Router component initializing");
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const isAgent = user?.role === "agent";
   
   useEffect(() => {
     console.log("Router component mounted");
   }, []);
   
+  // Afficher d'abord la page d'authentification si l'utilisateur n'est pas connecté
+  if (!user && !isLoading) {
+    return (
+      <Switch>
+        <Route path="/auth" component={AuthPage} />
+        <Route path="*">
+          <Redirect to="/auth" />
+        </Route>
+      </Switch>
+    );
+  }
+  
+  // Afficher un loader pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
   return (
     <Switch>
-      <Route path="/auth" component={AuthPage} />
+      <Route path="/auth">
+        {/* Rediriger vers la page d'accueil si l'utilisateur est déjà connecté */}
+        {user ? <Redirect to="/" /> : <AuthPage />}
+      </Route>
       
       {/* Routes spécifiques aux agents */}
       {isAgent && (
@@ -90,7 +115,7 @@ function Router() {
       )}
       
       {/* Routes pour les administrateurs */}
-      {!isAgent && (
+      {!isAgent && user && (
         <>
           <ProtectedRoute path="/" component={DashboardPage} />
           <ProtectedRoute path="/softphone" component={SoftphonePage} />
