@@ -22,6 +22,11 @@ import { SoftphoneProvider } from "@/hooks/use-softphone";
 import { useEffect, useState } from "react";
 import WelcomeAnimation from "@/components/animations/WelcomeAnimation";
 import { AnimatePresence } from "framer-motion";
+// Import additional pages for agent interface
+import AgentDashboardPage from "@/pages/agent-dashboard-page";
+import AgentSoftphonePage from "@/pages/agent-softphone-page";
+import AgentScriptsPage from "@/pages/agent-scripts-page";
+import AgentHistoryPage from "@/pages/agent-history-page";
 
 // Composant pour gérer l'animation de bienvenue
 function WelcomeHandler() {
@@ -60,6 +65,8 @@ function WelcomeHandler() {
 
 function Router() {
   console.log("Router component initializing");
+  const { user } = useAuth();
+  const isAgent = user?.role === "agent";
   
   useEffect(() => {
     console.log("Router component mounted");
@@ -68,18 +75,37 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/" component={DashboardPage} />
-      <ProtectedRoute path="/softphone" component={SoftphonePage} />
-      <ProtectedRoute path="/agents" component={AgentsPage} />
-      <ProtectedRoute path="/campaigns" component={CampaignsPage} />
-      <ProtectedRoute path="/contacts" component={ContactsPage} />
-      <ProtectedRoute path="/scripts" component={ScriptsPage} />
-      <ProtectedRoute path="/supervision" component={SupervisionPage} />
-      <ProtectedRoute path="/history" component={CallHistoryPage} />
-      <ProtectedRoute path="/stats" component={StatsPage} />
-      <ProtectedRoute path="/reports" component={ReportsPage} />
-      <ProtectedRoute path="/settings" component={SettingsPage} />
-      <Route component={NotFound} />
+      
+      {/* Routes spécifiques aux agents */}
+      {isAgent && (
+        <>
+          <ProtectedRoute path="/" component={AgentDashboardPage} />
+          <ProtectedRoute path="/agent-dashboard" component={AgentDashboardPage} />
+          <ProtectedRoute path="/agent-softphone" component={AgentSoftphonePage} />
+          <ProtectedRoute path="/agent-scripts" component={AgentScriptsPage} />
+          <ProtectedRoute path="/agent-history" component={AgentHistoryPage} />
+          {/* Fallback pour éviter l'accès aux routes admin */}
+          <Route path="*" component={AgentDashboardPage} />
+        </>
+      )}
+      
+      {/* Routes pour les administrateurs */}
+      {!isAgent && (
+        <>
+          <ProtectedRoute path="/" component={DashboardPage} />
+          <ProtectedRoute path="/softphone" component={SoftphonePage} />
+          <ProtectedRoute path="/agents" component={AgentsPage} />
+          <ProtectedRoute path="/campaigns" component={CampaignsPage} />
+          <ProtectedRoute path="/contacts" component={ContactsPage} />
+          <ProtectedRoute path="/scripts" component={ScriptsPage} />
+          <ProtectedRoute path="/supervision" component={SupervisionPage} />
+          <ProtectedRoute path="/history" component={CallHistoryPage} />
+          <ProtectedRoute path="/stats" component={StatsPage} />
+          <ProtectedRoute path="/reports" component={ReportsPage} />
+          <ProtectedRoute path="/settings" component={SettingsPage} />
+          <Route component={NotFound} />
+        </>
+      )}
     </Switch>
   );
 }
