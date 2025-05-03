@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Menu, Phone, User, ChevronRight, Clock, FileText, BarChart } from "lucide-react";
+import { X, Menu, Phone, User, ChevronRight, Clock, FileText, BarChart, WifiOff, Wifi } from "lucide-react";
 import { useSoftphone } from "@/hooks/use-softphone";
+import { useWebSocket } from "@/hooks/use-websocket";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AgentLayout({ children }: { children: React.ReactNode }) {
   const { user, logoutMutation } = useAuth();
   const { status: softphoneStatus, connect, disconnect } = useSoftphone();
+  const { isConnected: wsConnected, disconnect: wsDisconnect } = useWebSocket();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const isMobile = useMobile();
@@ -55,6 +58,23 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
         <div className="text-sm font-medium hidden md:block">
           {currentTime.toLocaleTimeString()}
         </div>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center">
+                {wsConnected ? (
+                  <Wifi className="h-5 w-5 text-green-400" />
+                ) : (
+                  <WifiOff className="h-5 w-5 text-red-400" />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{wsConnected ? "WebSocket connecté" : "WebSocket déconnecté"}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <Button
           variant={softphoneStatus === "ready" ? "default" : "outline"}

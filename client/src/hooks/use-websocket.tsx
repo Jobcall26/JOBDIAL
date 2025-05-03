@@ -75,22 +75,55 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
 
     socket.onclose = (event) => {
-      console.log("WebSocket disconnected", event.code, event.reason);
+      console.log("WebSocket disconnected", { 
+        code: event.code, 
+        reason: event.reason, 
+        wasClean: event.wasClean 
+      });
       setIsConnected(false);
       
       // Ne pas essayer de se reconnecter si c'était une fermeture normale ou une déconnexion volontaire
       // Les codes 1000 (Normal Closure) et 1001 (Going Away) sont des fermetures normales
       if (event.code !== 1000 && event.code !== 1001 && user) {
+        console.log("WebSocketProvider: Connection closed unexpectedly. Will attempt reconnection in 3 seconds");
+        
         // Try to reconnect after a delay
-        setTimeout(() => {
-          if (user) connectWebSocket();
+        const reconnectTimeout = setTimeout(() => {
+          if (user) {
+            console.log("WebSocketProvider: Attempting reconnection...");
+            connectWebSocket();
+          } else {
+            console.log("WebSocketProvider: User logged out, cancelling reconnection");
+          }
         }, 3000);
+        
+        // Retourner une fonction de nettoyage pour annuler la reconnexion si nécessaire
+        return () => {
+          console.log("WebSocketProvider: Clearing reconnection timeout");
+          clearTimeout(reconnectTimeout);
+        };
+      } else {
+        console.log("WebSocketProvider: Normal closure, no reconnection needed");
       }
     };
 
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      socket.close();
+    socket.onerror = (event) => {
+      console.error("WebSocketProvider: WebSocket error:", event);
+      
+      // Notifier l'utilisateur de l'erreur
+      toast({
+        title: "Erreur de connexion",
+        description: "La connexion au serveur a été perdue. Tentative de reconnexion...",
+        variant: "destructive"
+      });
+      
+      // Fermer la connexion avec un code d'erreur
+      // Le code 1006 indique une fermeture anormale
+      try {
+        socket.close(1006, "WebSocket error occurred");
+      } catch (closeError) {
+        console.error("WebSocketProvider: Error closing socket after error:", closeError);
+      }
     };
 
     return () => {
@@ -100,15 +133,28 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   // Connect and disconnect on auth changes
   useEffect(() => {
+    console.log("WebSocketProvider: Auth state changed", { userPresent: !!user });
+    
     if (user) {
+      console.log("WebSocketProvider: User authenticated, connecting WebSocket");
       connectWebSocket();
     } else {
       // Close connection when logged out
+      console.log("WebSocketProvider: User logged out, closing WebSocket");
       if (socketRef.current) {
-        socketRef.current.close();
+        // Fermer proprement avec le code 1000 (fermeture normale)
+        socketRef.current.close(1000, "User logged out");
         setIsConnected(false);
       }
     }
+    
+    // Cleanup function pour assurer la fermeture lors du démontage du composant
+    return () => {
+      console.log("WebSocketProvider: Component unmounting, cleaning up connection");
+      if (socketRef.current) {
+        socketRef.current.close(1000, "Component unmounting");
+      }
+    };
   }, [user, connectWebSocket]);
 
   // Send message function
@@ -122,18 +168,30 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   
   // Disconnect function - ferme la connexion WebSocket proprement
   const disconnect = useCallback(() => {
+    console.log("WebSocketProvider: Manual disconnect called");
+    
     if (socketRef.current) {
       // Envoyer un message de déconnexion avant de fermer
       if (socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify({
-          type: "disconnect",
-          data: { reason: "user_logout" }
-        }));
+        console.log("WebSocketProvider: Sending disconnect message");
+        try {
+          socketRef.current.send(JSON.stringify({
+            type: "disconnect",
+            data: { reason: "user_logout" }
+          }));
+        } catch (err) {
+          console.error("WebSocketProvider: Error sending disconnect message", err);
+        }
+      } else {
+        console.log("WebSocketProvider: Socket not open, ready state:", socketRef.current.readyState);
       }
       
       // Fermer la connexion avec le code 1000 (fermeture normale)
+      console.log("WebSocketProvider: Closing WebSocket connection");
       socketRef.current.close(1000, "User logout");
       setIsConnected(false);
+    } else {
+      console.log("WebSocketProvider: No socket ref to disconnect");
     }
   }, []);
 
