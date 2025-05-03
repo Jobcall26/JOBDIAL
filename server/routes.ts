@@ -524,6 +524,317 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Agent-specific routes
+  // Agent dashboard stats
+  app.get("/api/agent/stats", isAuthenticated, async (req, res) => {
+    try {
+      // Get agent's ID from the authenticated user
+      const agentId = req.user.id;
+      
+      // In a real implementation, this would fetch actual data from the database
+      // For now, return mock data
+      res.json({
+        dailyCalls: 24,
+        totalCalls: 128,
+        avgCallDuration: "3:15",
+        conversionRate: "32%",
+        callsRemaining: 26,
+        upcomingCallbacks: [
+          { contactName: "Jean Dupont", time: "14:30", phone: "+33 6 12 34 56 78" },
+          { contactName: "Marie Martin", time: "Demain 10:15", phone: "+33 6 98 76 54 32" }
+        ],
+        campaigns: [
+          { id: 1, name: "Assurance Santé Q3", leads: 150, progress: 45 },
+          { id: 5, name: "Satisfaction Client Q2", leads: 200, progress: 18 }
+        ]
+      });
+    } catch (error) {
+      console.error("Error in /api/agent/stats:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des statistiques de l'agent" });
+    }
+  });
+
+  // Agent campaigns with next leads
+  app.get("/api/agent/campaigns", isAuthenticated, async (req, res) => {
+    try {
+      // Get agent's ID from the authenticated user
+      const agentId = req.user.id;
+      
+      // In a real implementation, this would fetch the agent's assigned campaigns with next leads
+      res.json([
+        {
+          id: 1,
+          name: "Assurance Santé Q3",
+          leadsRemaining: 74,
+          nextLead: {
+            id: 134,
+            name: "Pierre Durand",
+            phone: "+33 6 23 45 67 89",
+            company: "Entreprise XYZ",
+            lastContact: null
+          }
+        },
+        {
+          id: 5,
+          name: "Satisfaction Client Q2",
+          leadsRemaining: 182,
+          nextLead: {
+            id: 256,
+            name: "Sylvie Moreau",
+            phone: "+33 6 34 56 78 90",
+            company: "Société ABC",
+            lastContact: "2025-04-15"
+          }
+        }
+      ]);
+    } catch (error) {
+      console.error("Error in /api/agent/campaigns:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des campagnes de l'agent" });
+    }
+  });
+
+  // Agent scripts list
+  app.get("/api/agent/scripts/list", isAuthenticated, async (req, res) => {
+    try {
+      // Get agent's ID from the authenticated user
+      const agentId = req.user.id;
+      
+      // In a real implementation, this would fetch the scripts assigned to the agent
+      res.json({
+        assigned: [
+          {
+            id: 1,
+            name: "Script Assurance Santé",
+            campaignName: "Assurance Santé Q3",
+            lastUsed: "2025-05-01 14:23",
+            isFavorite: true
+          },
+          {
+            id: 5,
+            name: "Enquête Satisfaction",
+            campaignName: "Satisfaction Client Q2",
+            lastUsed: "2025-04-28 10:45",
+            isFavorite: false
+          }
+        ],
+        all: [
+          {
+            id: 1,
+            name: "Script Assurance Santé",
+            campaignName: "Assurance Santé Q3",
+            lastUsed: "2025-05-01 14:23",
+            isFavorite: true
+          },
+          {
+            id: 2,
+            name: "Script Renouvellement Internet",
+            campaignName: "Renouvellement Internet",
+            lastUsed: null,
+            isFavorite: false
+          },
+          {
+            id: 5,
+            name: "Enquête Satisfaction",
+            campaignName: "Satisfaction Client Q2",
+            lastUsed: "2025-04-28 10:45",
+            isFavorite: false
+          }
+        ]
+      });
+    } catch (error) {
+      console.error("Error in /api/agent/scripts/list:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des scripts de l'agent" });
+    }
+  });
+
+  // Agent script details
+  app.get("/api/agent/scripts", isAuthenticated, async (req, res) => {
+    try {
+      const scriptId = req.query.scriptId ? parseInt(req.query.scriptId as string) : undefined;
+      const campaignId = req.query.campaignId ? parseInt(req.query.campaignId as string) : undefined;
+      
+      if (!scriptId && !campaignId) {
+        return res.status(400).json({ message: "ID du script ou de la campagne requis" });
+      }
+      
+      // In a real implementation, this would fetch the script details
+      // For now, return mock data
+      res.json({
+        id: scriptId || 1,
+        name: scriptId === 5 ? "Enquête Satisfaction" : "Script Assurance Santé",
+        content: "<p>Bonjour, je suis <strong>[nom de l'agent]</strong> de JOBDIAL. Suis-je bien en ligne avec {{contact_name}} ?</p><p>Nous réalisons actuellement une étude sur les besoins en assurance santé et je souhaiterais vous poser quelques questions si vous avez 5 minutes à m'accorder.</p>",
+        variables: [
+          { name: "contact_name", value: "M. Pierre Durand" },
+          { name: "agent_name", value: req.user.username }
+        ],
+        sections: [
+          {
+            title: "Qualification du besoin",
+            content: "<p>Tout d'abord, disposez-vous actuellement d'une complémentaire santé ?</p><p>Quelle est votre situation professionnelle actuelle ?</p><p>Combien de personnes composent votre foyer ?</p>"
+          },
+          {
+            title: "Présentation de l'offre",
+            content: "<p>En fonction de vos réponses, je peux vous proposer notre formule XYZ qui comprend :</p><ul><li>Remboursement à 100% des frais médicaux</li><li>Couverture hospitalisation complète</li><li>Option optique et dentaire premium</li></ul><p>Le tarif pour cette formule serait de 45€ par mois.</p>"
+          },
+          {
+            title: "Conclusion et prise de rendez-vous",
+            content: "<p>Cette offre semble-t-elle correspondre à vos attentes ?</p><p>Souhaiteriez-vous être recontacté par un de nos conseillers pour plus d'informations ou pour procéder à une souscription ?</p><p>Quel serait le meilleur moment pour vous joindre ?</p>"
+          }
+        ],
+        objections: [
+          {
+            objection: "Je n'ai pas le temps actuellement",
+            response: "Je comprends parfaitement. Quand serait-il préférable de vous rappeler ? Nous pouvons convenir d'un rendez-vous téléphonique à votre convenance."
+          },
+          {
+            objection: "Je suis déjà couvert par une assurance santé",
+            response: "C'est une bonne chose d'être déjà couvert. Pourriez-vous me préciser quand votre contrat arrive à échéance ? Nous pourrions vous proposer une étude comparative gratuite pour vous assurer que vous bénéficiez de la meilleure couverture possible."
+          },
+          {
+            objection: "C'est trop cher",
+            response: "Je comprends votre préoccupation concernant le tarif. Nous avons plusieurs formules adaptées à différents budgets. Pourriez-vous me préciser quel serait le tarif mensuel idéal pour vous ? Cela me permettrait de vous proposer la solution la plus adaptée."
+          }
+        ]
+      });
+    } catch (error) {
+      console.error("Error in /api/agent/scripts:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du script" });
+    }
+  });
+
+  // Agent call history
+  app.get("/api/agent/calls/history", isAuthenticated, async (req, res) => {
+    try {
+      // Get agent's ID from the authenticated user
+      const agentId = req.user.id;
+      const period = req.query.period as string || "today";
+      const result = req.query.result as string;
+      const campaign = req.query.campaign as string;
+      const search = req.query.search as string;
+      
+      // In a real implementation, this would fetch the agent's call history from the database
+      res.json({
+        calls: [
+          {
+            id: 1,
+            contact: {
+              name: "Pierre Durand",
+              phone: "+33 6 23 45 67 89"
+            },
+            campaign: {
+              id: 1,
+              name: "Assurance Santé Q3"
+            },
+            duration: "3:24",
+            timestamp: "2025-05-01T14:23:45",
+            date: "01/05/2025",
+            time: "14:23",
+            result: "interested",
+            notes: "Client intéressé par la formule Famille Premium. À rappeler pour finalisation.",
+            recordingUrl: "/recordings/call_1.mp3"
+          },
+          {
+            id: 2,
+            contact: {
+              name: "Sophie Martin",
+              phone: "+33 6 34 56 78 90"
+            },
+            campaign: {
+              id: 1,
+              name: "Assurance Santé Q3"
+            },
+            duration: "1:12",
+            timestamp: "2025-05-01T15:45:12",
+            date: "01/05/2025",
+            time: "15:45",
+            result: "refused",
+            notes: "Cliente déjà engagée avec un concurrent pour 18 mois."
+          },
+          {
+            id: 3,
+            contact: {
+              name: "Jean Lefebvre",
+              phone: "+33 6 12 34 56 78"
+            },
+            campaign: {
+              id: 5,
+              name: "Satisfaction Client Q2"
+            },
+            duration: "4:56",
+            timestamp: "2025-05-01T16:30:00",
+            date: "01/05/2025",
+            time: "16:30",
+            result: "callback",
+            notes: "Client demande à être rappelé demain à 10h. Intéressé pour comparer les offres."
+          }
+        ],
+        summary: {
+          total: 24,
+          interested: 7,
+          refused: 11,
+          callback: 4,
+          absent: 2,
+          avgDuration: "3:05"
+        }
+      });
+    } catch (error) {
+      console.error("Error in /api/agent/calls/history:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération de l'historique des appels" });
+    }
+  });
+
+  // Agent call filter options
+  app.get("/api/agent/calls/filter-options", isAuthenticated, async (req, res) => {
+    try {
+      // In a real implementation, this would fetch the available filter options for the agent
+      res.json({
+        results: [
+          { value: "interested", label: "Intéressé" },
+          { value: "refused", label: "Refusé" },
+          { value: "callback", label: "Rappel" },
+          { value: "absent", label: "Absent" }
+        ],
+        campaigns: [
+          { value: "1", label: "Assurance Santé Q3" },
+          { value: "5", label: "Satisfaction Client Q2" }
+        ]
+      });
+    } catch (error) {
+      console.error("Error in /api/agent/calls/filter-options:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des options de filtre" });
+    }
+  });
+
+  // Call connect and disconnect routes
+  app.post("/api/calls/connect", isAuthenticated, async (req, res) => {
+    try {
+      // In a real implementation, this would connect to Twilio or another VoIP provider
+      // and initiate a call
+      
+      // Update agent status to on-call
+      await storage.updateAgentStatus(req.user.id, "on_call");
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error in /api/calls/connect:", error);
+      res.status(500).json({ message: "Erreur lors de la connexion à la téléphonie" });
+    }
+  });
+
+  app.post("/api/calls/disconnect", isAuthenticated, async (req, res) => {
+    try {
+      // In a real implementation, this would disconnect from Twilio or another VoIP provider
+      
+      // Update agent status to available
+      await storage.updateAgentStatus(req.user.id, "available");
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error in /api/calls/disconnect:", error);
+      res.status(500).json({ message: "Erreur lors de la déconnexion de la téléphonie" });
+    }
+  });
+
   // Set up VoIP routes
   setupVoipRoutes(app);
 
