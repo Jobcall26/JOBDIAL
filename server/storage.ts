@@ -222,10 +222,6 @@ class DatabaseStorage implements IStorage {
   
   async updateAgent(id: number, data: any): Promise<any> {
     try {
-      // Update agent record in database
-      // Import hashPassword from auth.ts to ensure passwords are properly hashed
-      const { hashPassword } = require('./auth');
-      
       // Create properly typed update object
       const updateData: Partial<InsertUser> = {
         username: data.username,
@@ -234,6 +230,8 @@ class DatabaseStorage implements IStorage {
       
       // Only include password if provided (not empty)
       if (data.password) {
+        // Import hashPassword function from auth module
+        const { hashPassword } = await import('./auth');
         updateData.password = await hashPassword(data.password); // Hasher le mot de passe
       }
       
