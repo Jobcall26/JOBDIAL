@@ -7,6 +7,7 @@ import {
 import { User } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/hooks/use-websocket";
 
 type AuthContextType = {
   user: User | null;
@@ -32,6 +33,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  // Ne pas utiliser useWebSocket() ici pour éviter les dépendances circulaires
   
   console.log("AuthProvider initializing");
   
@@ -45,13 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
   } = useQuery<User | null, Error>({
     queryKey: ["/api/auth/me"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-    onSuccess: (data) => {
-      console.log("Auth query success:", data);
-    },
-    onError: (err) => {
-      console.error("Auth query error:", err);
-    }
+    queryFn: getQueryFn({ on401: "returnNull" })
   });
 
   // Log auth state changes
@@ -131,11 +127,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       console.log("Logout successful");
+      // Mise à jour du state
       queryClient.setQueryData(["/api/auth/me"], null);
       toast({
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès.",
       });
+      
+      // Le WebSocket sera déconnecté automatiquement par le WebSocketProvider
+      // qui observe les changements d'authentification
     },
     onError: (error: Error) => {
       console.error("Logout error:", error);

@@ -25,7 +25,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   // Function to establish WebSocket connection
   const connectWebSocket = useCallback(() => {
-    if (!user) return;
+    // N'essayez de connecter que si un utilisateur est connecté
+    if (!user) {
+      console.log("No user, skipping WebSocket connection");
+      return;
+    }
 
     // Close any existing connection
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
