@@ -56,6 +56,23 @@ export function handleWebSocketConnection(ws: WebSocket) {
           }
           break;
           
+        case "ping":
+          // Répondre au ping par un pong
+          sendMessage(ws, {
+            type: "pong",
+            data: {
+              timestamp: Date.now(),
+              echo: data.data?.timestamp
+            }
+          });
+          break;
+          
+        case "disconnect":
+          // Message de déconnexion volontaire reçu du client
+          console.log(`WebSocket disconnect request from user ${userId || 'unknown'}, reason: ${data.data?.reason || 'not specified'}`);
+          // Ne rien faire de spécial, la déconnexion sera traitée par l'événement close
+          break;
+          
         default:
           console.log(`Unknown message type: ${data.type}`);
       }

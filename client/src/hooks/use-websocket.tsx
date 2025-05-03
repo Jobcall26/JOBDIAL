@@ -58,6 +58,15 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data) as WebSocketMessage;
+        
+        // Gestion spéciale pour les messages de type "pong"
+        if (message.type === "pong") {
+          const latency = Date.now() - (message.data.echo || 0);
+          console.log(`WebSocketProvider: Pong received. Latency: ${latency}ms`);
+          // Ne pas propager les pongs dans le state pour éviter du bruit
+          return;
+        }
+        
         setLastMessage(message);
         
         // Handle specific message types
@@ -130,6 +139,38 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       socket.close();
     };
   }, [user, toast]);
+
+  // Ping/pong pour vérifier l'état de la connexion
+  useEffect(() => {
+    let pingInterval: NodeJS.Timeout | null = null;
+    
+    if (isConnected && user) {
+      console.log("WebSocketProvider: Setting up ping interval");
+      
+      // Envoyer un ping toutes les 30 secondes pour vérifier que la connexion est toujours active
+      pingInterval = setInterval(() => {
+        if (socketRef.current?.readyState === WebSocket.OPEN) {
+          console.log("WebSocketProvider: Sending ping");
+          try {
+            socketRef.current.send(JSON.stringify({ type: "ping", data: { timestamp: Date.now() } }));
+          } catch (error) {
+            console.error("WebSocketProvider: Error sending ping:", error);
+            // Si on ne peut pas envoyer un ping, la connexion est probablement morte
+            if (socketRef.current) {
+              socketRef.current.close(1006, "Ping failed");
+            }
+          }
+        }
+      }, 30000);
+    }
+    
+    return () => {
+      if (pingInterval) {
+        console.log("WebSocketProvider: Clearing ping interval");
+        clearInterval(pingInterval);
+      }
+    };
+  }, [isConnected, user]);
 
   // Connect and disconnect on auth changes
   useEffect(() => {
