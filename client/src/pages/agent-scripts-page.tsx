@@ -47,7 +47,13 @@ export default function AgentScriptsPage() {
       response: string;
     }[];
   }>({
-    queryKey: ["/api/agent/scripts", { scriptId: selectedScriptId }],
+    queryKey: ["/api/agent/scripts"],
+    queryFn: async () => {
+      if (!selectedScriptId) throw new Error("Aucun script sélectionné");
+      const res = await fetch(`/api/agent/scripts?scriptId=${selectedScriptId}`);
+      if (!res.ok) throw new Error("Erreur lors de la récupération du script");
+      return res.json();
+    },
     enabled: !!selectedScriptId,
   });
   
@@ -162,7 +168,7 @@ export default function AgentScriptsPage() {
                     <div className="text-center py-4 text-neutral-dark">
                       Chargement des scripts...
                     </div>
-                  ) : scripts?.all.filter(s => s.isFavorite).length > 0 ? (
+                  ) : scripts?.all && scripts.all.length > 0 && scripts.all.some(s => s.isFavorite) ? (
                     scripts.all.filter(s => s.isFavorite).map(script => (
                       <div 
                         key={script.id} 

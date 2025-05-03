@@ -12,6 +12,24 @@ type Call = {
   contactId: number;
   campaignId: number;
   startTime: string;
+  
+  // Propriétés du contact
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  contactCompany?: string;
+  contactJobTitle?: string;
+  contactBirthdate?: string;
+  contactAddress?: string;
+  contactCity?: string;
+  contactZipCode?: string;
+  contactLastCallDate?: string;
+  contactLastCallResult?: string;
+  contactCallCount?: number;
+  contactNotes?: string;
+  
+  // Propriétés de la campagne
+  campaignName?: string;
 };
 
 type SoftphoneContextType = {

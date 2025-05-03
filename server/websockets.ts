@@ -96,8 +96,14 @@ export function handleWebSocketConnection(ws: WebSocket) {
 
 // Helper function to safely send a message to a websocket
 function sendMessage(ws: WebSocket, message: any) {
-  if (ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(message));
+  try {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message));
+    } else {
+      console.log(`Cannot send message to client. WebSocket is not in OPEN state. Current state: ${ws.readyState}`);
+    }
+  } catch (error) {
+    console.error("Error sending WebSocket message:", error);
   }
 }
 
