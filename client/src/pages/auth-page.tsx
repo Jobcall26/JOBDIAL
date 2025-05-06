@@ -23,8 +23,18 @@ const registerSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+import { motion } from 'framer-motion';
+
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  const [showAnimation, setShowAnimation] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAnimation(false);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, []);
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   const loginForm = useForm<LoginFormData>({
@@ -76,7 +86,11 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2">
+    <>
+      <AnimatePresence mode="wait">
+        {showAnimation && <WelcomeAnimation />}
+      </AnimatePresence>
+      <div className="min-h-screen grid md:grid-cols-2">
       {/* Auth form column */}
       <div className="flex flex-col justify-center p-8 bg-white">
         <div className="flex items-center mb-8">
@@ -238,5 +252,6 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
