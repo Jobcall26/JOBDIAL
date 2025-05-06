@@ -1,0 +1,33 @@
+Crée une animation d’introduction immersive, cinématographique et professionnelle destinée à un CRM web appelé JOBDIAL, conçu pour les centres d'appels et les environnements de travail digitaux. Cette animation doit immédiatement captiver l'utilisateur et l’immerger dans une ambiance futuriste et technologique, tout en restant claire, lisible et fonctionnelle. L’inspiration visuelle doit mêler les interfaces de jeux vidéo de type cyberpunk, militaires tactiques ou de simulation IA (comme les HUD dans Cyberpunk 2077, Deus Ex, Watch Dogs ou Call of Duty) avec la simplicité et l’élégance d’une interface professionnelle moderne. L’objectif est de créer une atmosphère à la fois dynamique, engageante et crédible, pour motiver les agents à utiliser JOBDIAL avec enthousiasme.
+
+L’animation démarre sur un fond sombre animé, représentant une matrice numérique ou un réseau de circuits électroniques. Utiliser des éléments graphiques comme des lignes de code qui défilent, des motifs de circuit imprimé lumineux, des particules flottantes, des faisceaux de lumière ou des grilles 3D légèrement animées. Les couleurs dominantes sont le noir, le bleu électrique, le vert néon et des touches de blanc lumineux, avec des accents possibles en violet ou cyan. L’ambiance sonore est subtile : bips électroniques doux, impulsions numériques, ou sons de balayage digital.
+
+Après une ou deux secondes d’ambiance, le logo “JOBDIAL” apparaît au centre de l’écran, lettre par lettre. Chaque lettre doit apparaître avec des effets glitch, balayage lumineux, scan horizontal, flash d’énergie ou transition en morphing digital. La police de caractères doit être futuriste, technique, légèrement condensée, inspirée des typographies comme Orbitron, Share Tech Mono ou Exo. L’effet sonore accompagnant l’apparition du nom JOBDIAL doit être net mais discret : un clic digital, un balayage montant ou une impulsion électronique. L’arrière-plan continue à bouger lentement pour maintenir une sensation de vie numérique.
+
+Une fois le nom “JOBDIAL” complètement affiché, une séquence de numérotation débute automatiquement : des chiffres apparaissent successivement comme s’ils étaient tapés sur un clavier numérique ou un pavé téléphonique virtuel — 0, 1, 2, 3, jusqu’à 9. Chaque chiffre doit s’afficher dans une animation inspirée des téléphones digitaux : effet de bouton qui s’allume, halo lumineux, vibration subtile, clignotement néon. Cette séquence simule la composition d’un numéro d’appel, renforçant le thème call center. On peut également afficher une interface HUD semi-transparente montrant une “connexion en cours” ou “initialisation du système”.
+
+Ensuite, un message d’accueil motivant apparaît : “Bienvenue sur JOBDIAL”, “Connexion sécurisée établie”, “Centre de commande activé”, “Système prêt à l’emploi”, “Appels opérationnels”, ou encore “Votre mission commence maintenant.” Le texte s’affiche avec un effet machine à écrire, scintillement numérique, ou en fondu vertical. La couleur du texte peut alterner entre le blanc, le bleu clair ou le vert selon l’arrière-plan. Ce message renforce l’idée que JOBDIAL est une plateforme intelligente, prête à être utilisée comme un outil de pilotage d’équipe.
+
+L’étape suivante consiste à montrer une transition fluide vers une interface CRM vide, symbolisant une plateforme prête à être utilisée. Cette transition peut être un zoom dans une fenêtre, une ouverture de portail digital, un balayage de gauche à droite, ou un effet de dématérialisation vers un tableau de bord. L’interface visible peut contenir quelques zones grisées ou transparentes symbolisant des modules (ex. : contacts, campagnes, historique, support), mais tout doit paraître vide, comme un téléphone neuf ou une base fraîchement installée. Afficher un texte court comme “Aucune campagne active – Créez votre première mission” ou “Commencez votre activité maintenant.”
+
+L’animation doit durer entre 6 et 8 secondes maximum, fluide, responsive et légère pour le web. Elle doit être exportable en MP4, WebM, Lottie JSON ou SVG animé, compatible avec React, Vue ou tout framework front-end moderne. Elle doit également s’adapter aux formats desktop et mobile sans perte de qualité. Les sons doivent être discrets : bips, balayages, confirmation de saisie, mais pas de musique continue ni d’ambiance sonore encombrante. L’animation doit pouvoir fonctionner avec ou sans audio.
+
+Le style global de l’animation doit créer un effet “cockpit numérique”, comme si l’utilisateur entrait dans un terminal stratégique personnel. Chaque élément visuel doit renforcer l’idée que JOBDIAL est un système avancé, fiable, intelligent, et dédié à la performance. L’utilisateur doit ressentir qu’il entre dans une plateforme capable de centraliser ses campagnes, gérer ses appels, suivre ses statistiques et piloter ses équipes. L’environnement doit rester sobre et clair malgré les effets futuristes, pour conserver la lisibilité et le confort d’utilisation.
+
+L’animation peut aussi inclure des éléments secondaires animés, comme une onde lumineuse qui traverse le logo, une horloge système qui démarre (HH:MM:SS), ou des étiquettes volantes “Agents connectés : 0 / 0”, “Campagnes actives : 0”, simulant une interface système qui démarre. Ces petits détails ajoutent de la crédibilité sans surcharger visuellement.
+
+L’univers visuel global de JOBDIAL doit évoquer une fusion entre technologie d’entreprise, cybersécurité et interfaces gaming modernes. Les textures doivent être propres, nettes, sans bruit visuel. L’animation doit se charger rapidement (moins de 1 Mo si possible) et rester compatible avec un usage dans un splash screen, une page de chargement ou un écran de bienvenue après connexion.
+
+Les principales émotions à transmettre sont :
+
+Motivation : donner envie à l’utilisateur d’agir, de travailler.
+
+Technicité : évoquer la puissance du logiciel et la maîtrise des outils.
+
+Sécurité : l’utilisateur doit sentir que le système est stable, fiable.
+
+Modernité : le design doit refléter un outil de 2025 ou au-delà.
+
+Immersion : l’utilisateur doit sentir qu’il entre dans un espace unique.
+
+Les références visuelles possibles sont : interfaces de jeux AAA (Ubisoft, CD Projekt), panneaux de contrôle dans les films de science-fiction, tableaux de bord militaires, ou outils de surveillance high-tech. Le design doit plaire à des agents jeunes comme à des gestionnaires, en restant professionnel tout en étant attractif. L’ensemble doit rester cohérent avec une charte graphique moderne, une animation fluide et une ambiance inspirante.
