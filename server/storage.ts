@@ -24,15 +24,16 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUser(id: number): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Agent management
   getAgents(page: number, limit: number, search: string): Promise<{ agents: any[], total: number }>;
   getAgent(id: number): Promise<any | undefined>;
   createAgent(agent: any): Promise<any>;
   updateAgent(id: number, agent: any): Promise<any>;
-  getAgentsStatus(): Promise<{ agents: any[], counts: any }>;
+  getAgentsStatus(): Promise<any>;
   updateAgentStatus(agentId: number, status: string): Promise<void>;
-  
+  getAgentCampaigns(agentId: number): Promise<any>; // Added function signature
+
   // Campaign management
   getCampaigns(page: number, limit: number, search: string, status: string): Promise<{ campaigns: any[], total: number }>;
   getCampaignsList(): Promise<any[]>;
@@ -40,14 +41,14 @@ export interface IStorage {
   createCampaign(campaign: any): Promise<any>;
   updateCampaign(id: number, campaign: any): Promise<any>;
   deleteCampaign(id: number): Promise<void>;
-  
+
   // Contact/Lead management
   getContacts(page: number, limit: number, search: string, campaignId?: number, status?: string): Promise<{ contacts: any[], total: number }>;
   getContact(id: number): Promise<any | undefined>;
   createContact(contact: any): Promise<any>;
   updateContact(id: number, contact: any): Promise<any>;
   getContactFilterOptions(): Promise<any>;
-  
+
   // Script management
   getScripts(page: number, limit: number, search: string): Promise<{ scripts: any[], total: number }>;
   getScriptsList(): Promise<any[]>;
@@ -56,7 +57,7 @@ export interface IStorage {
   updateScript(id: number, script: any): Promise<any>;
   deleteScript(id: number): Promise<void>;
   duplicateScript(id: number): Promise<any>;
-  
+
   // Call history
   getRecentCalls(page: number, limit: number): Promise<{ calls: any[], total: number }>;
   getCallHistory(
@@ -70,30 +71,30 @@ export interface IStorage {
     dateTo?: string
   ): Promise<{ calls: any[], total: number }>;
   getCallFilterOptions(): Promise<any>;
-  
+
   // Statistics & Reports
   getDashboardStats(): Promise<any>;
   getPerformanceReport(period: string, agentId?: number, campaignId?: number): Promise<any>;
   getCampaignsReport(period: string): Promise<any>;
   getConversionReport(period: string, agentId?: number, campaignId?: number): Promise<any>;
   getActivityReport(dateFrom: string, dateTo: string, agentId?: number): Promise<any>;
-  
+
   // Supervision
   getSupervisionData(): Promise<any>;
-  
+
   // Settings
   getSettings(): Promise<any>;
   updateGeneralSettings(settings: any): Promise<any>;
   updateVoipSettings(settings: any): Promise<any>;
   updateNotificationSettings(settings: any): Promise<any>;
-  
+
   // Express session store
   sessionStore: session.Store;
 }
 
 class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
-  
+
   constructor() {
     this.sessionStore = new PostgresSessionStore({
       pool,
@@ -101,7 +102,7 @@ class DatabaseStorage implements IStorage {
       createTableIfMissing: true,
     });
   }
-  
+
   // User authentication
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await db.query.users.findFirst({
@@ -109,19 +110,19 @@ class DatabaseStorage implements IStorage {
     });
     return result;
   }
-  
+
   async getUser(id: number): Promise<User | undefined> {
     const result = await db.query.users.findFirst({
       where: eq(users.id, id)
     });
     return result;
   }
-  
+
   async createUser(user: InsertUser): Promise<User> {
     const [result] = await db.insert(users).values(user).returning();
     return result;
   }
-  
+
   // Agent management
   async getAgents(page: number, limit: number, search: string): Promise<{ agents: any[], total: number }> {
     // Get agent information from database
@@ -129,7 +130,7 @@ class DatabaseStorage implements IStorage {
     // Mocking the response for demonstration
     const offset = (page - 1) * limit;
     const searchFilter = search ? like(users.username, `%${search}%`) : undefined;
-    
+
     const agentsQuery = await db.query.users.findMany({
       where: and(
         eq(users.role, "agent"),
@@ -139,16 +140,16 @@ class DatabaseStorage implements IStorage {
       offset: offset,
       orderBy: users.username
     });
-    
+
     const totalCountResult = await db.select({ count: sql<number>`count(*)` })
       .from(users)
       .where(and(
         eq(users.role, "agent"),
         searchFilter
       ));
-    
+
     const total = totalCountResult[0]?.count || 0;
-    
+
     // Enrich with additional data
     const agents = agentsQuery.map(agent => {
       // In a real implementation, these would be fetched from the database
@@ -164,10 +165,10 @@ class DatabaseStorage implements IStorage {
         callsToday: Math.floor(Math.random() * 30)
       };
     });
-    
+
     return { agents, total };
   }
-  
+
   async getAgent(id: number): Promise<any | undefined> {
     const agent = await db.query.users.findFirst({
       where: and(
@@ -175,12 +176,12 @@ class DatabaseStorage implements IStorage {
         eq(users.role, "agent")
       )
     });
-    
+
     if (!agent) return undefined;
-    
+
     // In a real implementation, fetch agent's campaigns from agentCampaigns table
     const campaigns = [1, 2]; // Mock campaign IDs
-    
+
     return {
       id: agent.id,
       username: agent.username,
@@ -188,13 +189,13 @@ class DatabaseStorage implements IStorage {
       campaigns
     };
   }
-  
+
   async createAgent(data: any): Promise<any> {
     try {
       // Create agent record in database
       // Import hashPassword from auth.ts to ensure passwords are properly hashed
       const { hashPassword } = await import('./auth');
-      
+
       // Create properly typed agent object
       const agentData: InsertUser = {
         username: data.username,
@@ -202,14 +203,14 @@ class DatabaseStorage implements IStorage {
         email: data.email || null,
         role: "agent"
       };
-      
+
       const [result] = await db.insert(users).values(agentData).returning();
-      
+
       // Assign campaigns if specified
       if (data.campaigns && data.campaigns.length > 0) {
         // In a real implementation, insert campaign assignments
       }
-      
+
       return {
         id: result.id,
         username: result.username,
@@ -221,7 +222,7 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateAgent(id: number, data: any): Promise<any> {
     try {
       // Create properly typed update object
@@ -229,24 +230,24 @@ class DatabaseStorage implements IStorage {
         username: data.username,
         email: data.email || null
       };
-      
+
       // Only include password if provided (not empty)
       if (data.password) {
         // Import hashPassword function from auth module
         const { hashPassword } = await import('./auth');
         updateData.password = await hashPassword(data.password); // Hasher le mot de passe
       }
-      
+
       const [result] = await db.update(users)
         .set(updateData)
         .where(eq(users.id, id))
         .returning();
-      
+
       // Update campaign assignments if specified
       if (data.campaigns) {
         // In a real implementation, update campaign assignments
       }
-      
+
       return {
         id: result.id,
         username: result.username,
@@ -258,29 +259,29 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async getAgentsStatus(): Promise<{ agents: any[], counts: any }> {
     try {
       // Get agents with their current status
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const agentsList = await db.query.users.findMany({
         where: eq(users.role, "agent"),
         orderBy: users.username
       });
-      
+
       const agents = agentsList.map(agent => {
         const status = ["available", "on_call", "paused", "offline"][Math.floor(Math.random() * 4)] as string;
         const statusDuration = `${Math.floor(Math.random() * 3)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
-        
+
         const agent_data = {
           id: agent.id,
           username: agent.username,
           status,
           statusDuration
         };
-        
+
         // Add call data if agent is on call
         if (status === "on_call") {
           return {
@@ -291,17 +292,17 @@ class DatabaseStorage implements IStorage {
             }
           };
         }
-      
+
         return agent_data;
       });
-    
+
       // Calculate counts for each status
       const counts = {
         available: agents.filter(a => a.status === "available").length,
         on_call: agents.filter(a => a.status === "on_call").length,
         offline: agents.filter(a => a.status === "offline" || a.status === "paused").length
       };
-    
+
       return { agents, counts };
     } catch (error) {
       console.error("Error in getAgentsStatus:", error);
@@ -312,12 +313,12 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async updateAgentStatus(agentId: number, status: string): Promise<void> {
     try {
       // Update agent status in database
       // In a real implementation, this would update the database
-      
+
       // For now, just log it
       console.log(`Agent ${agentId} status updated to ${status}`);
     } catch (error) {
@@ -325,13 +326,44 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
+  //Added function implementation
+  async getAgentCampaigns(agentId: number): Promise<any> {
+    try {
+      return {
+        assigned: [
+          {
+            id: 1,
+            name: "Assurance Santé Q3",
+            description: "Campagne assurance santé",
+            progress: 45,
+            totalLeads: 150,
+            completedLeads: 68,
+            status: "active"
+          },
+          {
+            id: 2,
+            name: "Satisfaction Client Q2",
+            description: "Enquête satisfaction",
+            progress: 30,
+            totalLeads: 200,
+            completedLeads: 60,
+            status: "active"
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getAgentCampaigns:", error);
+      throw error;
+    }
+  }
+
   // Contact/Lead management
   async getContacts(page: number, limit: number, search: string, campaignId?: number, status?: string): Promise<{ contacts: any[], total: number }> {
     try {
       // Get contact information from database
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockContacts = [
         {
@@ -419,10 +451,10 @@ class DatabaseStorage implements IStorage {
           notes: "Souhaite participer à l'étude"
         }
       ];
-      
+
       // Apply filters
       let filteredContacts = [...mockContacts];
-      
+
       if (search) {
         const searchLower = search.toLowerCase();
         filteredContacts = filteredContacts.filter(c => 
@@ -433,32 +465,32 @@ class DatabaseStorage implements IStorage {
           c.company.toLowerCase().includes(searchLower)
         );
       }
-      
+
       if (campaignId) {
         filteredContacts = filteredContacts.filter(c => c.campaignId === campaignId);
       }
-      
+
       if (status) {
         filteredContacts = filteredContacts.filter(c => c.status === status);
       }
-      
+
       // Apply pagination
       const total = filteredContacts.length;
       const startIndex = (page - 1) * limit;
       const contacts = filteredContacts.slice(startIndex, startIndex + limit);
-      
+
       return { contacts, total };
     } catch (error) {
       console.error("Error in getContacts:", error);
       return { contacts: [], total: 0 };
     }
   }
-  
+
   async getContact(id: number): Promise<any | undefined> {
     try {
       // Get contact details by ID
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const contacts = [
         {
@@ -513,19 +545,19 @@ class DatabaseStorage implements IStorage {
           callHistory: []
         }
       ];
-      
+
       return contacts.find(c => c.id === id);
     } catch (error) {
       console.error("Error in getContact:", error);
       return undefined;
     }
   }
-  
+
   async createContact(contact: any): Promise<any> {
     try {
       // Create contact in database
       // In a real implementation, this would insert into the database
-      
+
       // Mocking the response for demonstration
       return {
         id: Math.floor(Math.random() * 1000) + 10,
@@ -540,12 +572,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateContact(id: number, contact: any): Promise<any> {
     try {
       // Update contact in database
       // In a real implementation, this would update the database
-      
+
       // Mocking the response for demonstration
       return {
         id,
@@ -557,12 +589,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async getContactFilterOptions(): Promise<any> {
     try {
       // Get filter options for contacts
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         statuses: [
@@ -585,13 +617,13 @@ class DatabaseStorage implements IStorage {
       return { statuses: [], campaigns: [] };
     }
   }
-  
+
   // Campaign management
   async getCampaigns(page: number, limit: number, search: string, status: string): Promise<{ campaigns: any[], total: number }> {
     try {
       // Get campaign information from database
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockCampaigns = [
       {
@@ -670,38 +702,38 @@ class DatabaseStorage implements IStorage {
         leadsPending: 132
       }
     ];
-    
+
     // Apply filters
     let filteredCampaigns = [...mockCampaigns];
-    
+
     if (search) {
       filteredCampaigns = filteredCampaigns.filter(c => 
         c.name.toLowerCase().includes(search.toLowerCase()) || 
         c.description.toLowerCase().includes(search.toLowerCase())
       );
     }
-    
+
     if (status && status !== "all") {
       filteredCampaigns = filteredCampaigns.filter(c => c.status === status);
     }
-    
+
     // Apply pagination
     const total = filteredCampaigns.length;
     const startIndex = (page - 1) * limit;
     const campaigns = filteredCampaigns.slice(startIndex, startIndex + limit);
-    
+
     return { campaigns, total };
     } catch (error) {
       console.error("Error in getCampaigns:", error);
       return { campaigns: [], total: 0 };
     }
   }
-  
+
   async getCampaignsList(): Promise<any[]> {
     try {
       // Get list of campaigns for dropdowns
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return [
         { id: 1, name: "Assurance Santé Q3" },
@@ -715,12 +747,12 @@ class DatabaseStorage implements IStorage {
       return [];
     }
   }
-  
+
   async getCampaign(id: number): Promise<any | undefined> {
     try {
       // Get campaign details by ID
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockCampaigns = [
         {
@@ -742,19 +774,19 @@ class DatabaseStorage implements IStorage {
           scriptId: 3
         }
       ];
-      
+
       return mockCampaigns.find(c => c.id === id);
     } catch (error) {
       console.error("Error in getCampaign:", error);
       return undefined;
     }
   }
-  
+
   async createCampaign(campaign: any): Promise<any> {
     try {
       // Create campaign in database
       // In a real implementation, this would insert into the database
-      
+
       // Mocking the response for demonstration
       return {
         id: Math.floor(Math.random() * 1000) + 10,
@@ -768,12 +800,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateCampaign(id: number, campaign: any): Promise<any> {
     try {
       // Update campaign in database
       // In a real implementation, this would update the database
-      
+
       // Mocking the response for demonstration
       console.log(`Campaign ${id} updated`);
       return {
@@ -788,31 +820,31 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async deleteCampaign(id: number): Promise<void> {
     try {
       // D'abord, supprimer tous les leads associés à cette campagne
       await db.delete(leads).where(eq(leads.campaignId, id));
-      
+
       // Ensuite, supprimer toutes les affectations agent-campagne
       await db.delete(agentCampaigns).where(eq(agentCampaigns.campaignId, id));
-      
+
       // Finalement, supprimer la campagne elle-même
       await db.delete(campaigns).where(eq(campaigns.id, id));
-      
+
       console.log(`Campaign ${id} deleted with all associated data`);
     } catch (error) {
       console.error("Error in deleteCampaign:", error);
       throw error;
     }
   }
-  
+
   // Script management
   async getScripts(page: number, limit: number, search: string): Promise<{ scripts: any[], total: number }> {
     try {
       // Get script information from database
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockScripts = [
         {
@@ -861,34 +893,34 @@ class DatabaseStorage implements IStorage {
           wordCount: 154
         }
       ];
-      
+
       // Apply search filter
       let filteredScripts = [...mockScripts];
-      
+
       if (search) {
         filteredScripts = filteredScripts.filter(s => 
           s.name.toLowerCase().includes(search.toLowerCase()) || 
           s.content.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       // Apply pagination
       const total = filteredScripts.length;
       const startIndex = (page - 1) * limit;
       const scripts = filteredScripts.slice(startIndex, startIndex + limit);
-      
+
       return { scripts, total };
     } catch (error) {
       console.error("Error in getScripts:", error);
       return { scripts: [], total: 0 };
     }
   }
-  
+
   async getScriptsList(): Promise<any[]> {
     try {
       // Get list of scripts for dropdowns
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return [
         { id: 1, name: "Script Assurance Santé" },
@@ -902,12 +934,12 @@ class DatabaseStorage implements IStorage {
       return [];
     }
   }
-  
+
   async getScript(id: number): Promise<any | undefined> {
     try {
       // Get script by ID
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockScripts = [
         {
@@ -926,22 +958,22 @@ class DatabaseStorage implements IStorage {
           content: "Bonjour, je suis [Agent] de l'institut JOBDIAL. Nous réalisons actuellement une étude de marché sur les produits technologiques et votre avis nous intéresse. Cela ne prendra que 5 minutes de votre temps. Êtes-vous disponible ?\n\nQuestions :\n1. Possédez-vous un smartphone ? Si oui, quelle marque ?\n2. À quelle fréquence changez-vous de téléphone ?\n3. Quel budget consacrez-vous à l'achat d'un nouveau téléphone ?\n4. Quelles sont les fonctionnalités les plus importantes pour vous ?\n\nMerci beaucoup pour votre participation !"
         }
       ];
-      
+
       return mockScripts.find(s => s.id === id);
     } catch (error) {
       console.error("Error in getScript:", error);
       return undefined;
     }
   }
-  
+
   async createScript(script: any): Promise<any> {
     try {
       // Create script in database
       // In a real implementation, this would insert into the database
-      
+
       // Calculate word count
       const wordCount = script.content.split(/\s+/).length;
-      
+
       // Mocking the response for demonstration
       return {
         id: Math.floor(Math.random() * 1000) + 10,
@@ -957,15 +989,15 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateScript(id: number, script: any): Promise<any> {
     try {
       // Update script in database
       // In a real implementation, this would update the database
-      
+
       // Calculate word count
       const wordCount = script.content.split(/\s+/).length;
-      
+
       // Mocking the response for demonstration
       return {
         id,
@@ -980,12 +1012,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async deleteScript(id: number): Promise<void> {
     try {
       // Delete script from database
       // In a real implementation, this would delete from the database
-      
+
       // For now, just log it
       console.log(`Script ${id} deleted`);
     } catch (error) {
@@ -993,20 +1025,20 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async duplicateScript(id: number): Promise<any> {
     try {
       // Duplicate script in database
       // In a real implementation, this would:
       // 1. Fetch the original script
       // 2. Create a new script with the same content but "(copie)" appended to the name
-      
+
       const original = await this.getScript(id);
-      
+
       if (!original) {
         throw new Error("Script not found");
       }
-      
+
       // Mocking the response for demonstration
       return {
         id: Math.floor(Math.random() * 1000) + 10,
@@ -1022,13 +1054,13 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   // Call history
   async getRecentCalls(page: number, limit: number): Promise<{ calls: any[], total: number }> {
     try {
       // Get recent calls
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockCalls = [
         {
@@ -1108,23 +1140,23 @@ class DatabaseStorage implements IStorage {
           result: "callback"
         }
       ];
-      
+
       // Generate more mock data to fill the limit
       const totalReal = mockCalls.length;
-      
+
       // Apply pagination
       const total = 120; // Mock total count
       const startIndex = (page - 1) * limit;
       const endIndex = Math.min(startIndex + limit, totalReal);
       const calls = mockCalls.slice(startIndex, endIndex);
-      
+
       return { calls, total };
     } catch (error) {
       console.error("Error in getRecentCalls:", error);
       return { calls: [], total: 0 };
     }
   }
-  
+
   async getCallHistory(
     page: number, 
     limit: number, 
@@ -1138,7 +1170,7 @@ class DatabaseStorage implements IStorage {
     try {
       // Get call history with filters
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const mockCalls = [
         {
@@ -1226,10 +1258,10 @@ class DatabaseStorage implements IStorage {
           recordingUrl: ""
         }
       ];
-      
+
       // Apply filters
       let filteredCalls = [...mockCalls];
-      
+
       if (search) {
         filteredCalls = filteredCalls.filter(c => 
           c.contact.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -1238,39 +1270,39 @@ class DatabaseStorage implements IStorage {
           c.campaign.name.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       if (result && result !== "all") {
         filteredCalls = filteredCalls.filter(c => c.result === result);
       }
-      
+
       if (campaign && campaign !== "all") {
         filteredCalls = filteredCalls.filter(c => c.campaign.id === parseInt(campaign));
       }
-      
+
       if (agent && agent !== "all") {
         filteredCalls = filteredCalls.filter(c => c.agent.id === parseInt(agent));
       }
-      
+
       // Skip date filtering for mock data
-      
+
       // Apply pagination
       const total = filteredCalls.length;
       const startIndex = (page - 1) * limit;
       const endIndex = Math.min(startIndex + limit, total);
       const calls = filteredCalls.slice(startIndex, endIndex);
-      
+
       return { calls, total };
     } catch (error) {
       console.error("Error in getCallHistory:", error);
       return { calls: [], total: 0 };
     }
   }
-  
+
   async getCallFilterOptions(): Promise<any> {
     try {
       // Get filter options for call history
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         campaigns: [
@@ -1293,13 +1325,13 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   // Statistics & Reports
   async getDashboardStats(): Promise<any> {
     try {
       // Get dashboard statistics
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         connectedAgents: 12,
@@ -1329,37 +1361,37 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async getPerformanceReport(period: string, agentId?: number, campaignId?: number): Promise<any> {
     try {
       // Get performance report data
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       const dates = [];
       const calls = [];
       const conversions = [];
-      
+
       // Create date range based on the period
       const today = new Date();
       const numDays = period === "week" ? 7 : (period === "month" ? 30 : 90);
-      
+
       for (let i = 0; i < numDays; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - (numDays - i - 1));
         dates.push(date.toISOString().split('T')[0]);
-        
+
         // Generate random data for calls and conversions
         calls.push(Math.floor(Math.random() * 50) + 10);
         conversions.push(Math.floor(Math.random() * 20) + 5);
       }
-      
+
       // Calculate totals and averages
       const totalCalls = calls.reduce((sum, count) => sum + count, 0);
       const totalConversions = conversions.reduce((sum, count) => sum + count, 0);
       const avgCallsPerDay = totalCalls / numDays;
       const conversionRate = totalConversions / totalCalls * 100;
-      
+
       return {
         period,
         dates,
@@ -1388,12 +1420,12 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async getCampaignsReport(period: string): Promise<any> {
     try {
       // Get campaigns report data
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         campaigns: [
@@ -1452,12 +1484,12 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async getConversionReport(period: string, agentId?: number, campaignId?: number): Promise<any> {
     try {
       // Get conversion report data
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         pieChart: [
@@ -1501,17 +1533,17 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async getActivityReport(dateFrom: string, dateTo: string, agentId?: number): Promise<any> {
     try {
       // Get activity report data
       // In a real implementation, this would fetch from the database
-      
+
       // Calculate number of days between dates
       const from = new Date(dateFrom);
       const to = new Date(dateTo);
       const daysDiff = Math.ceil((to.getTime() - from.getTime()) / (1000 * 3600 * 24)) + 1;
-      
+
       // Generate mock data
       const agentActivities = [
         {
@@ -1572,17 +1604,17 @@ class DatabaseStorage implements IStorage {
           conversions: "28.7%"
         }
       ];
-      
+
       // If agent ID is specified, filter data
       const activities = agentId ? agentActivities.filter(a => a.id === agentId) : agentActivities;
-      
+
       // Calculate summary if multiple agents
       let summary = null;
       if (activities.length > 1) {
         const totalCalls = activities.reduce((sum, a) => sum + a.totalCalls, 0);
         const totalInterested = activities.reduce((sum, a) => sum + a.callResults.interested, 0);
         const avgConversion = totalInterested / totalCalls * 100;
-        
+
         summary = {
           totalAgents: activities.length,
           totalCalls,
@@ -1590,7 +1622,7 @@ class DatabaseStorage implements IStorage {
           avgConversion: avgConversion.toFixed(1) + "%"
         };
       }
-      
+
       return {
         dateRange: {
           from: dateFrom,
@@ -1613,13 +1645,13 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   // Supervision
   async getSupervisionData(): Promise<any> {
     try {
       // Get supervision data
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         agents: [
@@ -1746,13 +1778,13 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   // Settings
   async getSettings(): Promise<any> {
     try {
       // Get application settings
       // In a real implementation, this would fetch from the database
-      
+
       // Mocking the response for demonstration
       return {
         general: {
@@ -1808,12 +1840,12 @@ class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async updateGeneralSettings(settings: any): Promise<any> {
     try {
       // Update general settings
       // In a real implementation, this would update the database
-      
+
       // Mocking the response for demonstration
       return {
         companyName: settings.companyName,
@@ -1826,12 +1858,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateVoipSettings(settings: any): Promise<any> {
     try {
       // Update VoIP settings
       // In a real implementation, this would update the database
-      
+
       // Mocking the response for demonstration
       return {
         twilioAccountSid: settings.twilioAccountSid,
@@ -1846,12 +1878,12 @@ class DatabaseStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateNotificationSettings(settings: any): Promise<any> {
     try {
       // Update notification settings
       // In a real implementation, this would update the database
-      
+
       // Mocking the response for demonstration
       return {
         emailNotifications: settings.emailNotifications,
