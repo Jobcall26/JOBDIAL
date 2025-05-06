@@ -38,6 +38,8 @@ export interface IStorage {
   getCampaignsList(): Promise<any[]>;
   getCampaign(id: number): Promise<any | undefined>;
   createCampaign(campaign: any): Promise<any>;
+  updateCampaign(id: number, campaign: any): Promise<any>;
+  deleteCampaign(id: number): Promise<void>;
   
   // Contact/Lead management
   getContacts(page: number, limit: number, search: string, campaignId?: number, status?: string): Promise<{ contacts: any[], total: number }>;
@@ -763,6 +765,39 @@ class DatabaseStorage implements IStorage {
       };
     } catch (error) {
       console.error("Error in createCampaign:", error);
+      throw error;
+    }
+  }
+  
+  async updateCampaign(id: number, campaign: any): Promise<any> {
+    try {
+      // Update campaign in database
+      // In a real implementation, this would update the database
+      
+      // Mocking the response for demonstration
+      console.log(`Campaign ${id} updated`);
+      return {
+        id: id,
+        name: campaign.name,
+        description: campaign.description,
+        scriptId: campaign.scriptId,
+        updatedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error in updateCampaign:", error);
+      throw error;
+    }
+  }
+  
+  async deleteCampaign(id: number): Promise<void> {
+    try {
+      // Delete campaign from database
+      // In a real implementation, this would delete from the database
+      
+      // For now, just log it
+      console.log(`Campaign ${id} deleted`);
+    } catch (error) {
+      console.error("Error in deleteCampaign:", error);
       throw error;
     }
   }

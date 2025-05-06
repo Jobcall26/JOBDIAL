@@ -176,6 +176,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/campaigns/:id", isAdmin, async (req, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const campaign = await storage.updateCampaign(campaignId, req.body);
+      res.json(campaign);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la mise à jour de la campagne" });
+    }
+  });
+
+  app.delete("/api/campaigns/:id", isAdmin, async (req, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      await storage.deleteCampaign(campaignId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la suppression de la campagne" });
+    }
+  });
+
   // Lead management API
   app.post("/api/leads/validate", isAuthenticated, async (req, res) => {
     try {
