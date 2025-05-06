@@ -1,13 +1,12 @@
+
 import { motion, useAnimate } from 'framer-motion';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { Activity, BarChart2, Users, Phone } from 'lucide-react';
 
 export default function WelcomeAnimation() {
   const [scope, animate] = useAnimate();
   const { user } = useAuth();
-  const isAgent = user?.role === 'agent';
-  const primaryColor = isAgent ? '#00E676' : '#2196F3';
+  const primaryColor = !user ? '#4A90E2' : (user?.role === 'agent' ? '#00E676' : '#2196F3');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -19,18 +18,135 @@ export default function WelcomeAnimation() {
             (element as HTMLElement).style.display = 'none';
           }
         });
-    }, 5500);
+    }, 6000);
 
     return () => clearTimeout(timer);
   }, [animate]);
 
-  const adminIcons = [
-    { Icon: Activity, label: "Supervision", delay: 2 },
-    { Icon: BarChart2, label: "Statistiques", delay: 2.3 },
-    { Icon: Users, label: "Agents", delay: 2.6 },
-    { Icon: Phone, label: "Appels", delay: 2.9 }
-  ];
+  if (!user) {
+    return (
+      <motion.div
+        ref={scope}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black welcome-animation-container overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="relative w-full h-full">
+          {/* Particules d'arrière-plan */}
+          {[...Array(100)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full"
+              style={{
+                background: `rgba(74, 144, 226, ${Math.random() * 0.5 + 0.5})`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                scale: [0, 1.5, 0],
+                opacity: [0, 1, 0],
+                x: [0, Math.random() * 200 - 100],
+                y: [0, Math.random() * 200 - 100],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
 
+          {/* Cercles pulsants */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={`circle-${i}`}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2"
+              style={{
+                borderColor: primaryColor,
+                width: `${(i + 1) * 100}px`,
+                height: `${(i + 1) * 100}px`,
+              }}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: i * 0.3,
+              }}
+            />
+          ))}
+
+          {/* Logo animé */}
+          <motion.div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1, delay: 0.5 }}
+          >
+            <motion.div
+              className="text-8xl font-bold mb-8"
+              animate={{
+                textShadow: [
+                  '0 0 20px rgba(74, 144, 226, 0.5)',
+                  '0 0 40px rgba(74, 144, 226, 0.8)',
+                  '0 0 20px rgba(74, 144, 226, 0.5)',
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              JOBDIAL
+            </motion.div>
+
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5 }}
+            >
+              <motion.div
+                className="text-2xl text-blue-400 font-light"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                Centre d'Appels Nouvelle Génération
+              </motion.div>
+
+              {/* Ligne de progression */}
+              <motion.div
+                className="h-0.5 bg-blue-500 mt-4"
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 3, delay: 2 }}
+              />
+            </motion.div>
+          </motion.div>
+
+          {/* Textes qui apparaissent */}
+          <div className="absolute bottom-20 left-0 right-0 text-center">
+            {[
+              "Innovation",
+              "Performance",
+              "Excellence"
+            ].map((text, index) => (
+              <motion.div
+                key={text}
+                className="text-xl text-blue-300 my-2"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 2.5 + (index * 0.3) }}
+              >
+                {text}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Reste du code pour les animations admin/agent...
   return (
     <motion.div
       ref={scope}
@@ -39,7 +155,7 @@ export default function WelcomeAnimation() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {isAgent ? (
+      {user.role === 'agent' ? (
         <>
           {[...Array(50)].map((_, i) => (
             <motion.div
@@ -134,46 +250,7 @@ export default function WelcomeAnimation() {
                 </motion.div>
               ))}
             </div>
-            <motion.div
-              className="mt-8 text-neutral-400"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 1, 0.8] }}
-              transition={{ delay: 3, duration: 1.5 }}
-            >
-              En attente d'appels - Prêt à commencer
-            </motion.div>
           </div>
-          <motion.div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-                linear-gradient(0deg, transparent 24%, 
-                ${primaryColor}10 25%, 
-                ${primaryColor}10 26%, 
-                transparent 27%, transparent 74%, 
-                ${primaryColor}10 75%, 
-                ${primaryColor}10 76%, 
-                transparent 77%, transparent),
-                linear-gradient(90deg, transparent 24%, 
-                ${primaryColor}10 25%, 
-                ${primaryColor}10 26%, 
-                transparent 27%, transparent 74%, 
-                ${primaryColor}10 75%, 
-                ${primaryColor}10 76%, 
-                transparent 77%, transparent)
-              `,
-              backgroundSize: '50px 50px',
-            }}
-            animate={{
-              scale: [1, 1.2],
-              opacity: [0.3, 0.1],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-          />
         </>
       ) : (
         <div className="relative w-full h-full flex items-center justify-center">
@@ -221,29 +298,11 @@ export default function WelcomeAnimation() {
             </div>
           </motion.div>
 
-          {adminIcons.map(({ Icon, label, delay }, index) => (
-            <motion.div
-              key={index}
-              className="absolute flex items-center gap-2"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                x: Math.cos(index * (Math.PI / 2)) * 150,
-                y: Math.sin(index * (Math.PI / 2)) * 150,
-              }}
-              transition={{ delay, duration: 0.5 }}
-            >
-              <Icon className="w-8 h-8" style={{ color: primaryColor }} />
-              <span className="text-sm font-medium">{label}</span>
-            </motion.div>
-          ))}
-
           <motion.div
             className="absolute bottom-20 text-center"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 3.5 }}
+            transition={{ delay: 1 }}
           >
             <motion.h1
               className="text-4xl font-bold mb-4"
@@ -258,7 +317,7 @@ export default function WelcomeAnimation() {
               className="text-lg text-white/70"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 4 }}
+              transition={{ delay: 1.5 }}
             >
               Interface administrateur initialisée
             </motion.p>
