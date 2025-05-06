@@ -34,21 +34,21 @@ function WelcomeHandler() {
   const { user } = useAuth();
   const [showWelcome, setShowWelcome] = useState(false);
   const [initialAuth, setInitialAuth] = useState(true);
-
+  
   useEffect(() => {
     // Si l'utilisateur vient de se connecter (n'était pas connecté avant)
     if (user && initialAuth) {
       setInitialAuth(false);
       setShowWelcome(true);
-
+      
       // Écouter l'événement de fin d'animation envoyé par le composant WelcomeAnimation
       const handleAnimationComplete = () => {
         setShowWelcome(false);
         console.log("Animation terminée, état mis à jour");
       };
-
+      
       document.addEventListener('welcomeAnimationComplete', handleAnimationComplete);
-
+      
       return () => {
         document.removeEventListener('welcomeAnimationComplete', handleAnimationComplete);
       };
@@ -56,7 +56,7 @@ function WelcomeHandler() {
       setInitialAuth(false);
     }
   }, [user, initialAuth]);
-
+  
   return (
     <AnimatePresence mode="wait">
       {showWelcome && <WelcomeAnimation />}
@@ -68,11 +68,11 @@ function Router() {
   console.log("Router component initializing");
   const { user, isLoading } = useAuth();
   const isAgent = user?.role === "agent";
-
+  
   useEffect(() => {
     console.log("Router component mounted");
   }, []);
-
+  
   // Afficher d'abord la page d'authentification si l'utilisateur n'est pas connecté
   if (!user && !isLoading) {
     return (
@@ -84,7 +84,7 @@ function Router() {
       </Switch>
     );
   }
-
+  
   // Afficher un loader pendant le chargement
   if (isLoading) {
     return (
@@ -93,14 +93,14 @@ function Router() {
       </div>
     );
   }
-
+  
   return (
     <Switch>
       <Route path="/auth">
         {/* Rediriger vers la page d'accueil si l'utilisateur est déjà connecté */}
         {user ? <Redirect to="/" /> : <AuthPage />}
       </Route>
-
+      
       {/* Routes spécifiques aux agents */}
       {isAgent && (
         <>
@@ -110,10 +110,10 @@ function Router() {
           <ProtectedRoute path="/agent-scripts" component={AgentScriptsPage} />
           <ProtectedRoute path="/agent-history" component={AgentHistoryPage} />
           {/* Fallback pour éviter l'accès aux routes admin */}
-          <Route path="*" component={AgentDashboardPage} /> {/* This remains as a fallback for agent routes */}
+          <Route path="*" component={AgentDashboardPage} />
         </>
       )}
-
+      
       {/* Routes pour les administrateurs */}
       {!isAgent && user && (
         <>
@@ -128,7 +128,7 @@ function Router() {
           <ProtectedRoute path="/stats" component={StatsPage} />
           <ProtectedRoute path="/reports" component={ReportsPage} />
           <ProtectedRoute path="/settings" component={SettingsPage} />
-          <Route path="*" component={NotFound} /> {/* This is now the catch-all 404 route */}
+          <Route component={NotFound} />
         </>
       )}
     </Switch>
@@ -137,10 +137,10 @@ function Router() {
 
 function App() {
   console.log("App component initializing");
-
+  
   useEffect(() => {
     console.log("App component mounted");
-
+    
     // Ne pas rediriger automatiquement - cela sera géré par le Router
     fetch("/api/auth/me", { credentials: "include" })
       .then(res => {
@@ -150,7 +150,7 @@ function App() {
       .then(data => console.log("Auth check response data:", data))
       .catch(err => console.error("Auth check failed:", err));
   }, []);
-
+  
   try {
     return (
       <QueryClientProvider client={queryClient}>
