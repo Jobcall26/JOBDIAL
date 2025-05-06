@@ -53,6 +53,21 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<SoftphoneStatus>("disconnected");
   const [error, setError] = useState<string | null>(null);
   const [currentCall, setCurrentCall] = useState<Call | null>(null);
+  const [dialMode, setDialMode] = useState<"manual" | "auto" | "predictive" | "power">("manual");
+  const [isRecording, setIsRecording] = useState(false);
+  const [callQuality, setCallQuality] = useState<number>(100);
+  const [networkLatency, setNetworkLatency] = useState<number>(0);
+  const [autoDialLevel, setAutoDialLevel] = useState<number>(1);
+  const [autoDialMode, setAutoDialMode] = useState<"progressive" | "predictive" | "power">("progressive");
+  const [autoDialActive, setAutoDialActive] = useState<boolean>(false);
+  const [hopper, setHopper] = useState<{loaded: number, total: number}>({loaded: 0, total: 0});
+  const [viciDialStats, setViciDialStats] = useState({
+    callsAttempted: 0,
+    callsAnswered: 0,
+    contactRate: 0,
+    avgWaitTime: 0,
+    dropRate: 0
+  });
 
   // Effet pour jouer des sons lors des changements de statut
   useEffect(() => {
