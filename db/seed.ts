@@ -1,3 +1,4 @@
+
 import { db } from "./index";
 import * as schema from "@shared/schema";
 import { hashPassword } from "../server/auth";
