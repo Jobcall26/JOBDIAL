@@ -9,8 +9,6 @@ import UserAvatar from "@/components/common/UserAvatar";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, PhoneOff, Phone } from "lucide-react";
-import { User } from "lucide-react"; // Added import for User icon
-
 
 type AgentStatus = "available" | "on_call" | "paused" | "offline";
 
@@ -19,14 +17,6 @@ type Campaign = {
   name: string;
   scriptId: number;
 };
-
-type CampaignField = {
-  label: string;
-  type: 'text' | 'select' | 'number';
-  placeholder?: string;
-  options?: { label: string; value: string }[];
-};
-
 
 export default function Softphone() {
   const { user } = useAuth();
@@ -41,22 +31,22 @@ export default function Softphone() {
     isCallInProgress,
     error
   } = useSoftphone();
-
+  
   const [agentStatus, setAgentStatus] = useState<AgentStatus>("offline");
   const [selectedCampaign, setSelectedCampaign] = useState<number | null>(null);
-
+  
   // Fetch agent's assigned campaigns
   const { data: campaigns } = useQuery<Campaign[]>({
     queryKey: ["/api/agents/campaigns", user?.id],
     enabled: !!user?.id,
   });
-
+  
   // Fetch current call info including contact and script
   const { data: callData } = useQuery({
     queryKey: ["/api/calls/current", currentCall?.id],
     enabled: !!currentCall?.id,
   });
-
+  
   const handleStatusChange = async (newStatus: AgentStatus) => {
     try {
       if (newStatus === "available") {
@@ -74,16 +64,16 @@ export default function Softphone() {
       console.error("Error changing status:", err);
     }
   };
-
+  
   const handleCampaignSelect = (campaignId: number) => {
     setSelectedCampaign(campaignId);
   };
-
+  
   const handleMakeCall = async () => {
     if (!selectedCampaign) {
       return;
     }
-
+    
     try {
       await makeCall(selectedCampaign);
       setAgentStatus("on_call");
@@ -91,7 +81,7 @@ export default function Softphone() {
       console.error("Error making call:", err);
     }
   };
-
+  
   const handleEndCall = async (result: string) => {
     try {
       await endCall(result);
@@ -100,23 +90,7 @@ export default function Softphone() {
       console.error("Error ending call:", err);
     }
   };
-
-  // Placeholder for campaign fields -  Replace with actual data fetching
-  const campaignFields: CampaignField[] = [
-    { label: "Nom", type: "text", placeholder: "Entrez le nom" },
-    { label: "Email", type: "text", placeholder: "Entrez l'email" },
-    { label: "Téléphone", type: "text", placeholder: "Entrez le numéro de téléphone" },
-    {
-      label: "Statut",
-      type: "select",
-      options: [
-        { label: "Prospect", value: "prospect" },
-        { label: "Client", value: "client" },
-      ],
-    },
-  ];
-
-
+  
   // Render different UI based on agent status
   const renderContent = () => {
     // Not connected yet
@@ -135,7 +109,7 @@ export default function Softphone() {
           <Button
             onClick={() => handleStatusChange("available")}
             disabled={isConnecting}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+            className="bg-[#10B981] hover:bg-[#0D9668]"
           >
             {isConnecting ? (
               <>
@@ -149,7 +123,7 @@ export default function Softphone() {
         </div>
       );
     }
-
+    
     // Connected but not on a call
     if (agentStatus === "available") {
       return (
@@ -173,7 +147,7 @@ export default function Softphone() {
               ))}
             </div>
           </div>
-
+          
           <div className="flex justify-center mt-4">
             <Button
               onClick={handleMakeCall}
@@ -184,7 +158,7 @@ export default function Softphone() {
               Lancer un appel
             </Button>
           </div>
-
+          
           <div className="mt-6 text-center">
             <Button
               variant="outline"
@@ -197,100 +171,56 @@ export default function Softphone() {
         </div>
       );
     }
-
+    
     // On a call
     if (agentStatus === "on_call" && callData) {
       return (
         <div className="py-2">
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Informations Client */}
+            {/* Contact info */}
             <div className="w-full md:w-1/3">
-              <Card className="bg-white shadow-lg border-blue-200 hover:border-blue-300 transition-all">
-                <CardHeader className="pb-2 border-b bg-blue-50">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-blue-100 h-10 w-10 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-blue-700" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">{callData.contact?.name || "Inconnu"}</CardTitle>
-                        <div className="text-sm text-blue-700">
-                          ID: {callData.contact?.id || "Inconnu"} - {callData.campaign?.name || "Inconnu"}
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-blue-50">
-                      {new Date(callData.startTime || Date.now()).toLocaleTimeString()}
-                    </Badge>
-                  </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Contact</CardTitle>
                 </CardHeader>
-
-                <CardContent className="p-4 space-y-4">
-                  {/* Informations de contact */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                <CardContent>
+                  <div className="flex items-center mb-4">
+                    <UserAvatar
+                      className="w-12 h-12 mr-3"
+                      user={{ username: callData.contact?.name || "Inconnu" }}
+                    />
                     <div>
-                      <div className="font-medium text-neutral-dark mb-1">Contact</div>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-neutral-dark">Téléphone:</span>
-                          <span className="ml-2 font-medium">{callData.contact?.phone || "Inconnu"}</span>
-                        </div>
-                        <div>
-                          <span className="text-neutral-dark">Email:</span>
-                          <span className="ml-2 font-medium">{callData.contact?.email || "Inconnu"}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium text-neutral-dark mb-1">Adresse</div>
-                      <div className="space-y-2">
-                        <div>{callData.contact?.address || "Inconnu"}</div>
-                        <div>{callData.contact?.city || "Inconnu"}, {callData.contact?.zipCode || "Inconnu"}</div>
-                      </div>
+                      <div className="font-medium">{callData.contact?.name || "Inconnu"}</div>
+                      <div className="text-sm text-neutral-dark">{callData.contact?.phone || ""}</div>
                     </div>
                   </div>
-
-                  {/* Historique des appels */}
-                  <div>
-                    <div className="font-medium text-neutral-dark mb-2">Historique des appels</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm p-2 bg-gray-50 rounded">
-                        <span>Dernier contact: {callData.contact?.lastCallDate || 'Premier appel'}</span>
-                        <span>Résultat: {callData.contact?.lastCallResult || '-'}</span>
+                  
+                  <div className="space-y-2 text-sm">
+                    {callData.contact?.email && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-dark">Email:</span>
+                        <span>{callData.contact.email}</span>
                       </div>
-                      <div className="text-sm text-neutral-dark">
-                        Total des appels: {callData.contact?.callCount || 0}
+                    )}
+                    {callData.contact?.company && (
+                      <div className="flex justify-between">
+                        <span className="text-neutral-dark">Entreprise:</span>
+                        <span>{callData.contact.company}</span>
                       </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-neutral-dark">Campagne:</span>
+                      <span>{callData.campaign?.name || ""}</span>
                     </div>
-                  </div>
-
-                  {/* Formulaire dynamique selon la campagne */}
-                  <div className="border rounded-lg p-3 bg-green-50">
-                    <div className="font-medium text-green-800 mb-3">Formulaire {callData.campaign?.name || "Inconnu"}</div>
-                    <div className="space-y-3">
-                      {campaignFields.map((field, index) => (
-                        <div key={index}>
-                          <label className="text-sm font-medium mb-1 block">{field.label}</label>
-                          {field.type === 'select' ? (
-                            <select className="w-full p-2 border rounded-md text-sm">
-                              {field.options?.map((opt, i) => (
-                                <option key={i} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input 
-                              type={field.type} 
-                              className="w-full p-2 border rounded-md text-sm"
-                              placeholder={field.placeholder}
-                            />
-                          )}
-                        </div>
-                      ))}
+                    <div className="pt-2">
+                      <Badge variant="outline" className="mr-1">
+                        {callData.contact?.tags?.[0] || "Nouveau contact"}
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-
+              
               <div className="mt-4">
                 <CallControls 
                   callDuration={callData.duration || "00:00"}
@@ -298,7 +228,7 @@ export default function Softphone() {
                 />
               </div>
             </div>
-
+            
             {/* Script display */}
             <div className="w-full md:w-2/3">
               <ScriptDisplay 
@@ -311,7 +241,7 @@ export default function Softphone() {
         </div>
       );
     }
-
+    
     // Paused
     if (agentStatus === "paused") {
       return (
@@ -323,12 +253,12 @@ export default function Softphone() {
         </div>
       );
     }
-
+    
     return null;
   };
-
+  
   return (
-    <Card className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+    <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
         <CardTitle className="text-lg font-semibold">Softphone</CardTitle>
         <div className="flex space-x-2">
@@ -360,7 +290,7 @@ function StatusIndicator({ status }: { status: AgentStatus }) {
         return "bg-[#EF4444]";
     }
   };
-
+  
   const getStatusText = () => {
     switch (status) {
       case "available":
@@ -373,7 +303,7 @@ function StatusIndicator({ status }: { status: AgentStatus }) {
         return "Déconnecté";
     }
   };
-
+  
   return (
     <div className="flex items-center">
       <div className={`w-3 h-3 rounded-full ${getStatusColor()} mr-2`}></div>
