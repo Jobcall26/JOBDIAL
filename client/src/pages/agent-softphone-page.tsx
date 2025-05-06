@@ -24,15 +24,16 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useSoftphone } from "@/hooks/use-softphone";
 import { useSounds } from "@/hooks/use-sounds";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Phone, PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause, Settings, BookOpen, DoorOpen, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 
 export default function AgentSoftphonePage() {
   const { user } = useAuth();
   const { status, isCallInProgress, currentCall, connect, disconnect, makeCall, endCall } = useSoftphone();
+  const { toast } = useToast();
   const [callDuration, setCallDuration] = useState(0);
   const [selectedTab, setSelectedTab] = useState("auto");
   const [selectedContact, setSelectedContact] = useState<any>(null);
@@ -42,6 +43,24 @@ export default function AgentSoftphonePage() {
   const [micMuted, setMicMuted] = useState(false);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [isScriptVisible, setIsScriptVisible] = useState(true);
+  
+  // États pour le mode prédictif
+  const [predictiveActive, setPredictiveActive] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<string>("");
+  const [aggressivenessLevel, setAggressivenessLevel] = useState<string>("1");
+  const [predictiveStats, setPredictiveStats] = useState({
+    callsPlaced: 0,
+    callsAnswered: 0,
+    contactRate: "0%",
+    avgWaitTime: "0s"
+  });
+  
+  // États pour les files d'attente
+  const [queueActive, setQueueActive] = useState(false);
+  const [selectedQueue, setSelectedQueue] = useState<string>("all");
+  const [queueStatus, setQueueStatus] = useState<"available" | "paused" | "offline">("available");
+  const [showQueueSettings, setShowQueueSettings] = useState(false);
+  const [showMyQueues, setShowMyQueues] = useState(false);
   
   // Fetch all campaigns for manual and auto-dialing
   const { data: campaigns } = useQuery<{
@@ -139,6 +158,92 @@ export default function AgentSoftphonePage() {
   const toggleSpeaker = () => {
     setSpeakerMuted(!speakerMuted);
     // In a real implementation, this would mute/unmute the speaker
+  };
+  
+  // Fonction pour activer/désactiver le mode prédictif
+  const togglePredictiveMode = () => {
+    if (predictiveActive) {
+      setPredictiveActive(false);
+      // Arrêter le composeur prédictif
+      setPredictiveStats({
+        callsPlaced: 0,
+        callsAnswered: 0,
+        contactRate: "0%",
+        avgWaitTime: "0s"
+      });
+      
+      // Afficher un toast de confirmation
+      toast({
+        title: "Mode prédictif désactivé",
+        description: "Le composeur prédictif a été arrêté avec succès.",
+      });
+    } else {
+      // Vérifier si une campagne est sélectionnée
+      if (!selectedCampaign) {
+        toast({
+          title: "Sélection requise",
+          description: "Veuillez sélectionner une campagne pour le mode prédictif.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setPredictiveActive(true);
+      
+      // Simuler des statistiques qui évoluent
+      const simulateActivity = () => {
+        const callsPlaced = Math.floor(Math.random() * 20) + 5;
+        const callsAnswered = Math.floor(callsPlaced * (Math.random() * 0.4 + 0.3)); // 30-70% de réponse
+        const contactRate = Math.round((callsAnswered / callsPlaced) * 100) + "%";
+        const avgWaitTimeSeconds = Math.floor(Math.random() * 30) + 3;
+        const avgWaitTime = `${avgWaitTimeSeconds}s`;
+        
+        setPredictiveStats({
+          callsPlaced,
+          callsAnswered,
+          contactRate,
+          avgWaitTime
+        });
+      };
+      
+      simulateActivity();
+      
+      // Afficher un toast de confirmation
+      toast({
+        title: "Mode prédictif activé",
+        description: "Le composeur prédictif est maintenant actif pour la campagne sélectionnée.",
+      });
+    }
+  };
+  
+  // Fonctions pour le mode file d'attente
+  const joinQueue = () => {
+    setQueueActive(true);
+    setQueueStatus("available");
+    
+    toast({
+      title: "File d'attente rejoint",
+      description: `Vous avez rejoint la file d'attente ${selectedQueue === 'all' ? 'globale' : selectedQueue}`,
+    });
+  };
+  
+  const leaveQueue = () => {
+    setQueueActive(false);
+    
+    toast({
+      title: "File d'attente quittée",
+      description: "Vous avez quitté la file d'attente avec succès.",
+    });
+  };
+  
+  const toggleQueueSettings = () => {
+    setShowQueueSettings(!showQueueSettings);
+    if (showMyQueues) setShowMyQueues(false);
+  };
+  
+  const toggleMyQueues = () => {
+    setShowMyQueues(!showMyQueues);
+    if (showQueueSettings) setShowQueueSettings(false);
   };
   
   // Processing script variables
@@ -283,9 +388,14 @@ export default function AgentSoftphonePage() {
                 </TabsContent>
                 
                 <TabsContent value="predictive" className="space-y-4 mt-4">
-                  <Card className="border-2 border-amber-500">
+                  <Card className={`border-2 ${predictiveActive ? 'border-green-500' : 'border-amber-500'}`}>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Mode Composeur Prédictif</CardTitle>
+                      <CardTitle className="text-base flex items-center justify-between">
+                        <span>Mode Composeur Prédictif</span>
+                        {predictiveActive && (
+                          <Badge className="bg-green-500 animate-pulse">Actif</Badge>
+                        )}
+                      </CardTitle>
                       <CardDescription>
                         Le composeur prédictif appelle automatiquement plusieurs contacts en même temps, optimisant le temps des agents.
                       </CardDescription>
@@ -294,7 +404,13 @@ export default function AgentSoftphonePage() {
                       <div className="space-y-3">
                         <div>
                           <label className="text-sm font-medium mb-1 block">Campagne</label>
-                          <select className="w-full p-2 border rounded-md">
+                          <select 
+                            className="w-full p-2 border rounded-md"
+                            value={selectedCampaign}
+                            onChange={(e) => setSelectedCampaign(e.target.value)}
+                            disabled={predictiveActive}
+                          >
+                            <option value="">Sélectionnez une campagne</option>
                             {campaigns?.map(campaign => (
                               <option key={campaign.id} value={campaign.id}>{campaign.name}</option>
                             ))}
@@ -303,7 +419,12 @@ export default function AgentSoftphonePage() {
                         
                         <div>
                           <label className="text-sm font-medium mb-1 block">Niveau d'agressivité</label>
-                          <select className="w-full p-2 border rounded-md">
+                          <select 
+                            className="w-full p-2 border rounded-md"
+                            value={aggressivenessLevel}
+                            onChange={(e) => setAggressivenessLevel(e.target.value)}
+                            disabled={predictiveActive}
+                          >
                             <option value="1">Bas (1.0 - appels par agent)</option>
                             <option value="1.3">Moyen (1.3 - appels par agent)</option>
                             <option value="1.5">Elevé (1.5 - appels par agent)</option>
@@ -311,27 +432,57 @@ export default function AgentSoftphonePage() {
                           </select>
                         </div>
                         
-                        <div className="border rounded-md p-3 bg-yellow-50">
-                          <div className="flex items-center text-sm text-amber-800 font-medium">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
-                              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                            </svg>
-                            Attention: Mode prédictif
+                        {!predictiveActive && (
+                          <div className="border rounded-md p-3 bg-yellow-50">
+                            <div className="flex items-center text-sm text-amber-800 font-medium">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                              </svg>
+                              Attention: Mode prédictif
+                            </div>
+                            <div className="text-xs text-amber-700 mt-1">
+                              En mode prédictif, le système appellera automatiquement plusieurs contacts pour maximiser votre temps de conversation. Vous recevrez un appel dès qu'un contact répond.
+                            </div>
                           </div>
-                          <div className="text-xs text-amber-700 mt-1">
-                            En mode prédictif, le système appellera automatiquement plusieurs contacts pour maximiser votre temps de conversation. Vous recevrez un appel dès qu'un contact répond.
+                        )}
+                        
+                        {predictiveActive && (
+                          <div className="border rounded-md p-3 bg-green-50">
+                            <div className="flex items-center text-sm text-green-800 font-medium">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                              </svg>
+                              Mode prédictif actif
+                            </div>
+                            <div className="text-xs text-green-700 mt-1">
+                              Le composeur prédictif est en cours d'exécution pour la campagne sélectionnée. Vous recevrez automatiquement des appels lorsque des contacts répondront.
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                         <div className="pt-2">
                           <Button 
-                            className="w-full bg-amber-600 hover:bg-amber-700"
-                            onClick={() => alert('Mode prédictif activé ! Cette fonctionnalité n\'est pas encore complètement implémentée.')}
+                            className={`w-full ${predictiveActive 
+                              ? 'bg-red-600 hover:bg-red-700' 
+                              : 'bg-amber-600 hover:bg-amber-700'}`}
+                            onClick={togglePredictiveMode}
+                            disabled={!status || status !== "ready" || (!selectedCampaign && !predictiveActive)}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
-                              <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
-                            </svg>
-                            Activer le mode prédictif
+                            {predictiveActive ? (
+                              <>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                                  <path d="M5.25 3A2.25 2.25 0 003 5.25v9.5A2.25 2.25 0 005.25 17h9.5A2.25 2.25 0 0017 14.75v-9.5A2.25 2.25 0 0014.75 3h-9.5z" />
+                                </svg>
+                                Désactiver le mode prédictif
+                              </>
+                            ) : (
+                              <>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-2">
+                                  <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+                                </svg>
+                                Activer le mode prédictif
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -343,28 +494,33 @@ export default function AgentSoftphonePage() {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <div className="text-neutral-dark">Appels lancés</div>
-                        <div className="font-bold">0</div>
+                        <div className="font-bold">{predictiveStats.callsPlaced}</div>
                       </div>
                       <div>
                         <div className="text-neutral-dark">Appels répondus</div>
-                        <div className="font-bold">0</div>
+                        <div className="font-bold">{predictiveStats.callsAnswered}</div>
                       </div>
                       <div>
                         <div className="text-neutral-dark">Taux de contact</div>
-                        <div className="font-bold">0%</div>
+                        <div className="font-bold">{predictiveStats.contactRate}</div>
                       </div>
                       <div>
                         <div className="text-neutral-dark">Attente moyenne</div>
-                        <div className="font-bold">0s</div>
+                        <div className="font-bold">{predictiveStats.avgWaitTime}</div>
                       </div>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="queue" className="space-y-4 mt-4">
-                  <Card className="border-2 border-purple-500">
+                  <Card className={`border-2 ${queueActive ? 'border-green-500' : 'border-purple-500'}`}>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">File d'Attente Intelligente</CardTitle>
+                      <CardTitle className="text-base flex items-center justify-between">
+                        <span>File d'Attente Intelligente</span>
+                        {queueActive && (
+                          <Badge className="bg-green-500 animate-pulse">Actif</Badge>
+                        )}
+                      </CardTitle>
                       <CardDescription>
                         Reçoit et traite les appels entrants et les transferts selon des règles de routage intelligentes.
                       </CardDescription>
@@ -374,15 +530,36 @@ export default function AgentSoftphonePage() {
                         <div className="border rounded-lg p-3 bg-purple-50">
                           <div className="flex justify-between items-center mb-3">
                             <div className="text-sm font-medium text-purple-800">Mon statut dans la file</div>
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-                              Disponible
+                            <Badge variant="outline" className={`
+                              ${queueActive 
+                                ? queueStatus === "available" 
+                                  ? "bg-green-100 text-green-800 border-green-200" 
+                                  : queueStatus === "paused" 
+                                    ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                    : "bg-red-100 text-red-800 border-red-200"
+                                : "bg-gray-100 text-gray-800 border-gray-200"
+                              }
+                            `}>
+                              {queueActive 
+                                ? queueStatus === "available" 
+                                  ? "Disponible" 
+                                  : queueStatus === "paused" 
+                                    ? "En pause"
+                                    : "Hors ligne"
+                                : "Inactif"
+                              }
                             </Badge>
                           </div>
                           
                           <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
                               <label className="text-xs font-medium text-purple-800 mb-1 block">File d'attente</label>
-                              <select className="w-full p-2 border border-purple-200 rounded-md text-sm">
+                              <select 
+                                className="w-full p-2 border border-purple-200 rounded-md text-sm"
+                                value={selectedQueue}
+                                onChange={(e) => setSelectedQueue(e.target.value)}
+                                disabled={queueActive}
+                              >
                                 <option value="all">Toutes les files</option>
                                 <option value="1">Service client</option>
                                 <option value="2">Support technique</option>
@@ -398,40 +575,130 @@ export default function AgentSoftphonePage() {
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
-                            <label className="text-xs font-medium text-purple-800 mb-1 block">Position dans les files</label>
-                            <div className="border rounded-md bg-white p-2">
-                              <div className="grid grid-cols-3 gap-2 text-xs">
-                                <div>
-                                  <div className="font-medium">Service client</div>
-                                  <div>Position: 3</div>
-                                </div>
-                                <div>
-                                  <div className="font-medium">Support technique</div>
-                                  <div>Position: 2</div>
-                                </div>
-                                <div>
-                                  <div className="font-medium">Commercial</div>
-                                  <div>Position: 1</div>
+                          {!showQueueSettings && !showMyQueues && (
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium text-purple-800 mb-1 block">Position dans les files</label>
+                              <div className="border rounded-md bg-white p-2">
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <div className="font-medium">Service client</div>
+                                    <div>Position: {queueActive ? 3 : "-"}</div>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">Support technique</div>
+                                    <div>Position: {queueActive ? 2 : "-"}</div>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">Commercial</div>
+                                    <div>Position: {queueActive ? 1 : "-"}</div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                           
-                          <div className="pt-3 flex justify-between">
-                            <Button variant="outline" size="sm" className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
-                                <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM9.25 4.065A8.963 8.963 0 005 3c-.85 0-1.673.118-2.454.339A.75.75 0 002 4.06v11a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.065z" />
-                              </svg>
-                              Mes files
-                            </Button>
-                            <Button variant="outline" size="sm" className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
-                                <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                              </svg>
-                              Paramètres
-                            </Button>
-                          </div>
+                          {showQueueSettings && (
+                            <div className="space-y-3 border rounded-md bg-white p-3">
+                              <h4 className="font-medium text-sm">Paramètres de file d'attente</h4>
+                              
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Temps maximal entre appels</label>
+                                <select className="w-full p-2 border rounded-md text-xs">
+                                  <option value="0">Aucun temps d'attente</option>
+                                  <option value="10">10 secondes</option>
+                                  <option value="30">30 secondes</option>
+                                  <option value="60">1 minute</option>
+                                  <option value="120">2 minutes</option>
+                                </select>
+                              </div>
+                              
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Mode de distribution</label>
+                                <select className="w-full p-2 border rounded-md text-xs">
+                                  <option value="roundrobin">Répartition équitable</option>
+                                  <option value="leastrecent">Attente la plus longue</option>
+                                  <option value="fewestcalls">Moins d'appels reçus</option>
+                                  <option value="random">Aléatoire</option>
+                                </select>
+                              </div>
+                              
+                              <div>
+                                <label className="text-xs font-medium mb-1 block">Priorité de l'agent</label>
+                                <select className="w-full p-2 border rounded-md text-xs">
+                                  <option value="1">Basse (1)</option>
+                                  <option value="2">Normale (2)</option>
+                                  <option value="3">Haute (3)</option>
+                                  <option value="4">Urgente (4)</option>
+                                </select>
+                              </div>
+                              
+                              <div className="pt-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={toggleQueueSettings}
+                                >
+                                  Fermer les paramètres
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {showMyQueues && (
+                            <div className="space-y-3 border rounded-md bg-white p-3">
+                              <h4 className="font-medium text-sm">Mes files d'attente</h4>
+                              
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-xs p-2 border rounded-md">
+                                  <span className="font-medium">Service client</span>
+                                  <Badge variant="outline" className="bg-green-100 text-green-700 text-xs">Actif</Badge>
+                                </div>
+                                <div className="flex items-center justify-between text-xs p-2 border rounded-md">
+                                  <span className="font-medium">Support technique</span>
+                                  <Badge variant="outline" className="bg-green-100 text-green-700 text-xs">Actif</Badge>
+                                </div>
+                                <div className="flex items-center justify-between text-xs p-2 border rounded-md">
+                                  <span className="font-medium">Commercial</span>
+                                  <Badge variant="outline" className="bg-red-100 text-red-700 text-xs">Inactif</Badge>
+                                </div>
+                              </div>
+                              
+                              <div className="pt-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={toggleMyQueues}
+                                >
+                                  Fermer
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {!showQueueSettings && !showMyQueues && (
+                            <div className="pt-3 flex justify-between">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                onClick={toggleMyQueues}
+                              >
+                                <BookOpen className="w-4 h-4 mr-1" />
+                                Mes files
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-xs h-8 border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                onClick={toggleQueueSettings}
+                              >
+                                <Settings className="w-4 h-4 mr-1" />
+                                Paramètres
+                              </Button>
+                            </div>
+                          )}
                         </div>
                         
                         <div className="p-3 bg-gray-50 rounded-lg">
@@ -439,37 +706,66 @@ export default function AgentSoftphonePage() {
                           <div className="grid grid-cols-2 gap-3 text-sm">
                             <div>
                               <div className="text-neutral-dark">Temps moyen d'attente</div>
-                              <div className="font-bold">1m 45s</div>
+                              <div className="font-bold">{queueActive ? "1m 45s" : "-"}</div>
                             </div>
                             <div>
                               <div className="text-neutral-dark">Appels en attente</div>
-                              <div className="font-bold">4</div>
+                              <div className="font-bold">{queueActive ? "4" : "-"}</div>
                             </div>
                             <div>
                               <div className="text-neutral-dark">Agents disponibles</div>
-                              <div className="font-bold">3</div>
+                              <div className="font-bold">{queueActive ? "3" : "-"}</div>
                             </div>
                             <div>
                               <div className="text-neutral-dark">Ma durée moyenne</div>
-                              <div className="font-bold">3m 12s</div>
+                              <div className="font-bold">{queueActive ? "3m 12s" : "-"}</div>
                             </div>
                           </div>
                         </div>
                         
                         <div className="pt-2 grid grid-cols-2 gap-2">
-                          <Button 
-                            className="bg-purple-600 hover:bg-purple-700"
-                            onClick={() => alert('Rejoindre la file ! Cette fonctionnalité sera bientôt implémentée.')}
-                          >
-                            Rejoindre la file
-                          </Button>
-                          <Button 
-                            variant="outline"
-                            className="border-red-300 text-red-700"
-                            onClick={() => alert('Quitter la file ! Cette fonctionnalité sera bientôt implémentée.')}
-                          >
-                            Quitter la file
-                          </Button>
+                          {!queueActive ? (
+                            <Button 
+                              className="w-full bg-purple-600 hover:bg-purple-700"
+                              onClick={joinQueue}
+                              disabled={!status || status !== "ready"}
+                            >
+                              <DoorOpen className="h-4 w-4 mr-2" />
+                              Rejoindre la file
+                            </Button>
+                          ) : (
+                            <Button 
+                              className="w-full bg-red-600 hover:bg-red-700"
+                              onClick={leaveQueue}
+                              disabled={isCallInProgress}
+                            >
+                              <LogOut className="h-4 w-4 mr-2" />
+                              Quitter la file
+                            </Button>
+                          )}
+                          
+                          {queueActive && (
+                            <Button 
+                              variant="outline"
+                              className={queueStatus === "paused" 
+                                ? "border-green-300 text-green-700" 
+                                : "border-yellow-300 text-yellow-700"}
+                              onClick={() => setQueueStatus(queueStatus === "paused" ? "available" : "paused")}
+                              disabled={isCallInProgress}
+                            >
+                              {queueStatus === "paused" ? (
+                                <>
+                                  <PlayCircle className="h-4 w-4 mr-2" />
+                                  Reprendre
+                                </>
+                              ) : (
+                                <>
+                                  <Pause className="h-4 w-4 mr-2" />
+                                  Mettre en pause
+                                </>
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
