@@ -995,7 +995,41 @@ export default function AgentSoftphonePage() {
                           <option value="UNQUALIFIED">Non qualifié</option>
                         </select>
                         
-                        <div className="flex justify-end">
+                        {dispositionCode === "CALLBACK" && (
+                          <div className="space-y-2 mt-2 border-t pt-2">
+                            <h5 className="text-xs font-medium">Planifier un rappel</h5>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-xs text-neutral-dark">Date</label>
+                                <Input 
+                                  type="date" 
+                                  value={callbackDate}
+                                  onChange={(e) => setCallbackDate(e.target.value)}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-neutral-dark">Heure</label>
+                                <Input 
+                                  type="time" 
+                                  value={callbackTime}
+                                  onChange={(e) => setCallbackTime(e.target.value)}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setShowCallComments(!showCallComments)}
+                          >
+                            {showCallComments ? "Masquer notes" : "Ajouter notes"}
+                          </Button>
                           <Button
                             size="sm"
                             className="text-xs"
@@ -1006,6 +1040,38 @@ export default function AgentSoftphonePage() {
                             Soumettre
                           </Button>
                         </div>
+                        
+                        {showCallComments && (
+                          <div className="mt-3 pt-3 border-t">
+                            <Textarea
+                              placeholder="Notes sur la disposition..."
+                              className="h-24 text-xs"
+                              value={callNotes}
+                              onChange={(e) => setCallNotes(e.target.value)}
+                            />
+                            <div className="mt-2">
+                              <h5 className="text-xs font-medium mb-1">Tags</h5>
+                              <div className="flex flex-wrap gap-1">
+                                {["Intéressé", "Prix", "Concurrence", "Famille", "Santé", "Rappeler", "Urgent"].map(tag => (
+                                  <Badge 
+                                    key={tag}
+                                    variant="outline" 
+                                    className={`cursor-pointer text-xs ${callTags.includes(tag) ? 'bg-blue-50 border-blue-200' : ''}`}
+                                    onClick={() => {
+                                      if (callTags.includes(tag)) {
+                                        setCallTags(callTags.filter(t => t !== tag));
+                                      } else {
+                                        setCallTags([...callTags, tag]);
+                                      }
+                                    }}
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Contrôles du volume */}
