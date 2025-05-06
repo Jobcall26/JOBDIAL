@@ -1,30 +1,21 @@
-
 import { motion, useAnimate } from 'framer-motion';
 import { useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function WelcomeAnimation() {
   const [scope, animate] = useAnimate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       animate(scope.current, { opacity: 0 }, { duration: 0.5 })
         .then(() => {
           document.dispatchEvent(new Event('welcomeAnimationComplete'));
-          const element = document.querySelector('.welcome-animation-container');
-          if (element) {
-            (element as HTMLElement).style.display = 'none';
-          }
         });
     }, 4500);
-    
+
     return () => clearTimeout(timer);
   }, [animate]);
-
-  const messages = [
-    "Connexion sécurisée établie",
-    "Centre de commande activé",
-    "Système opérationnel"
-  ];
 
   return (
     <motion.div
@@ -34,7 +25,6 @@ export default function WelcomeAnimation() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Grille de fond animée */}
       <motion.div 
         className="absolute inset-0 opacity-20"
         initial={{ scale: 1.1 }}
@@ -45,42 +35,12 @@ export default function WelcomeAnimation() {
         }}
       />
 
-      {/* Séquence de numérotation */}
-      <div className="grid grid-cols-3 gap-6 mb-16">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number, index) => (
-          <motion.div
-            key={number}
-            className="w-16 h-16 flex items-center justify-center bg-blue-500/10 rounded-xl backdrop-blur-sm border border-blue-500/30"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ 
-              opacity: [0, 1, 1, 0.7],
-              scale: [0.5, 1, 1, 0.95],
-              boxShadow: [
-                "0 0 0 rgba(0,102,204,0)",
-                "0 0 20px rgba(0,102,204,0.5)",
-                "0 0 40px rgba(0,102,204,0.3)",
-                "0 0 10px rgba(0,102,204,0.2)"
-              ]
-            }}
-            transition={{
-              delay: index * 0.15,
-              duration: 0.6,
-              times: [0, 0.3, 0.6, 1],
-              ease: "easeOut"
-            }}
-          >
-            <span className="text-3xl font-bold text-blue-400 text-glow">{number}</span>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Messages système */}
-      <div className="relative z-10 text-center space-y-3">
+      <div className="relative z-10 text-center space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2, duration: 0.5 }}
-          className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-wider"
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="text-6xl md:text-8xl font-bold mb-6 text-white tracking-wider"
         >
           <motion.span
             animate={{
@@ -96,36 +56,31 @@ export default function WelcomeAnimation() {
               repeatType: "reverse"
             }}
           >
-            Bienvenue sur JOBDIAL
+            JOBDIAL
           </motion.span>
         </motion.div>
 
-        {messages.map((message, index) => (
-          <motion.div
-            key={message}
-            className="text-xl text-blue-300"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              delay: 2.5 + (index * 0.3),
-              duration: 0.3
-            }}
-          >
-            {message}
-          </motion.div>
-        ))}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+          className="text-3xl text-blue-400"
+        >
+          Bienvenue {user?.role === 'admin' ? 'Administrateur' : 'Agent'} {user?.username}
+        </motion.div>
 
         <motion.div
-          className="mt-8 text-neutral-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 3.8 }}
+          transition={{ delay: 2.5, duration: 0.5 }}
+          className="text-xl text-neutral-400 space-y-2"
         >
-          Aucune campagne active - Créez votre première mission
+          <div>Accès système autorisé</div>
+          <div>Interface d'administration activée</div>
+          <div>Tous les systèmes sont opérationnels</div>
         </motion.div>
       </div>
 
-      {/* Effet de scan */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
         initial={{ y: "-100%" }}
