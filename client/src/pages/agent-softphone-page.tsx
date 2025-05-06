@@ -62,6 +62,25 @@ export default function AgentSoftphonePage() {
   const [showQueueSettings, setShowQueueSettings] = useState(false);
   const [showMyQueues, setShowMyQueues] = useState(false);
   
+  // États pour les fonctionnalités ViciDial
+  const [pauseCode, setPauseCode] = useState<string>("BREAK");
+  const [dispositionCode, setDispositionCode] = useState<string>("CALLBACK");
+  const [showDialpad, setShowDialpad] = useState(false);
+  const [showScriptTab, setShowScriptTab] = useState(true);
+  const [showCustomerTab, setShowCustomerTab] = useState(false);
+  const [showFormTab, setShowFormTab] = useState(false);
+  const [showHistoryTab, setShowHistoryTab] = useState(false);
+  const [showEmailTab, setShowEmailTab] = useState(false);
+  const [showChatTab, setShowChatTab] = useState(false);
+  const [manualDialSpeed, setManualDialSpeed] = useState<"slow" | "normal" | "fast">("normal");
+  const [activeTab, setActiveTab] = useState<string>("script");
+  const [recordingEnabled, setRecordingEnabled] = useState(true);
+  const [volumeLevel, setVolumeLevel] = useState(75);
+  const [parkCall, setParkCall] = useState(false);
+  const [callLog, setCallLog] = useState<string[]>([]);
+  const [webFormUrl, setWebFormUrl] = useState<string>("");
+  const [leadScore, setLeadScore] = useState<number | null>(null);
+  
   // Fetch all campaigns for manual and auto-dialing
   const { data: campaigns } = useQuery<{
     id: number;
@@ -303,7 +322,8 @@ export default function AgentSoftphonePage() {
                   <TabsTrigger value="auto" className="flex-1">Auto</TabsTrigger>
                   <TabsTrigger value="manual" className="flex-1">Manuel</TabsTrigger>
                   <TabsTrigger value="predictive" className="flex-1">Prédictif</TabsTrigger>
-                  <TabsTrigger value="queue" className="flex-1">File d'attente</TabsTrigger>
+                  <TabsTrigger value="queue" className="flex-1">File</TabsTrigger>
+                  <TabsTrigger value="vicidial" className="flex-1">ViciDial</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="auto" className="space-y-4 mt-4">
@@ -766,6 +786,278 @@ export default function AgentSoftphonePage() {
                               )}
                             </Button>
                           )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="vicidial" className="space-y-4 mt-4">
+                  <Card className="border-2 border-blue-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center justify-between">
+                        <span>Interface ViciDial</span>
+                        <Badge className="bg-blue-500">Pro</Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        Interface complète avec toutes les fonctionnalités ViciDial pour les opérateurs de centre d'appels.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-3">
+                      {/* Barre d'état ViciDial */}
+                      <div className="flex justify-between items-center p-2 bg-blue-50 border border-blue-200 rounded-md">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${status === "ready" ? "bg-green-500" : "bg-red-500"}`}></div>
+                          <span className="text-sm font-medium">{status === "ready" ? "En ligne" : "Hors ligne"}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs">Agent ID: {user?.id}</span>
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                            {isCallInProgress ? "En appel" : "Disponible"}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Options de pause avec codes */}
+                      <div className="border rounded-md p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-sm font-medium">Statut de pause</h4>
+                          <Badge variant={pauseCode ? "destructive" : "outline"} className="text-xs">
+                            {pauseCode ? "En pause" : "Actif"}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <select 
+                              className="w-2/3 p-2 text-xs border rounded-md" 
+                              value={pauseCode}
+                              onChange={(e) => setPauseCode(e.target.value)}
+                              disabled={isCallInProgress}
+                            >
+                              <option value="">Pas en pause</option>
+                              <option value="BREAK">Pause café</option>
+                              <option value="LUNCH">Déjeuner</option>
+                              <option value="MEETING">Réunion</option>
+                              <option value="TRAINING">Formation</option>
+                              <option value="PERSONAL">Personnel</option>
+                            </select>
+                            <Button 
+                              size="sm"
+                              variant={pauseCode ? "default" : "destructive"}
+                              className="text-xs"
+                              onClick={() => setPauseCode(pauseCode ? "" : "BREAK")}
+                              disabled={isCallInProgress}
+                            >
+                              {pauseCode ? "Reprendre" : "Pause"}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Pavé numérique */}
+                      <div className={`border rounded-md p-3 ${showDialpad ? "block" : "hidden"}`}>
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-sm font-medium">Pavé numérique</h4>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 w-6 p-0"
+                            onClick={() => setShowDialpad(false)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                            </svg>
+                          </Button>
+                        </div>
+                        
+                        <Input
+                          type="text"
+                          value={manualNumber}
+                          onChange={(e) => setManualNumber(e.target.value)}
+                          className="mb-2 text-center"
+                          placeholder="Entrez un numéro"
+                        />
+                        
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#'].map((digit) => (
+                            <Button
+                              key={digit}
+                              variant="outline"
+                              size="sm"
+                              className="h-10 text-lg"
+                              onClick={() => setManualNumber(prev => prev + digit)}
+                            >
+                              {digit}
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        <div className="flex justify-between mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setManualNumber('')}
+                          >
+                            Effacer
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="text-xs"
+                            onClick={startManualCall}
+                            disabled={!manualNumber || !status || status !== "ready"}
+                          >
+                            <Phone className="h-3 w-3 mr-1" />
+                            Appeler
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Menu des boutons de contrôle rapide */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center justify-start text-xs h-9 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                          onClick={() => setShowDialpad(!showDialpad)}
+                        >
+                          <Phone className="h-3.5 w-3.5 mr-1" />
+                          <span>{showDialpad ? "Cacher pavé" : "Pavé num."}</span>
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          className={`flex items-center justify-start text-xs h-9 ${recordingEnabled ? 'bg-green-50 hover:bg-green-100 border-green-200' : 'bg-red-50 hover:bg-red-100 border-red-200'}`}
+                          onClick={() => setRecordingEnabled(!recordingEnabled)}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                          <span>{recordingEnabled ? "Enreg. On" : "Enreg. Off"}</span>
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center justify-start text-xs h-9 bg-purple-50 hover:bg-purple-100 border-purple-200"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                          <span>Scripts</span>
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center justify-start text-xs h-9 bg-orange-50 hover:bg-orange-100 border-orange-200"
+                        >
+                          <Headphones className="h-3.5 w-3.5 mr-1" />
+                          <span>Aide Supervisor</span>
+                        </Button>
+                      </div>
+                      
+                      {/* Panneau des dispositions */}
+                      <div className="border rounded-md p-3">
+                        <h4 className="text-sm font-medium mb-2">Disposition de l'appel</h4>
+                        <select 
+                          className="w-full p-2 text-xs border rounded-md mb-2" 
+                          value={dispositionCode}
+                          onChange={(e) => setDispositionCode(e.target.value)}
+                        >
+                          <option value="SALE">Vente</option>
+                          <option value="CALLBACK">Rappel demandé</option>
+                          <option value="NOANSWER">Pas de réponse</option>
+                          <option value="BUSY">Occupé</option>
+                          <option value="DISCONNECT">Raccrochement</option>
+                          <option value="REJECTION">Refus</option>
+                          <option value="DONOTCALL">Ne pas rappeler</option>
+                          <option value="QUALIFIED">Qualifié</option>
+                          <option value="UNQUALIFIED">Non qualifié</option>
+                        </select>
+                        
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            className="text-xs"
+                            disabled={!isCallInProgress}
+                            onClick={() => handleEndCall(dispositionCode)}
+                          >
+                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                            Soumettre
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Contrôles du volume */}
+                      <div className="border rounded-md p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-sm font-medium">Volume</h4>
+                          <span className="text-xs font-medium">{volumeLevel}%</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <VolumeX className="h-4 w-4 text-neutral-dark" />
+                          <Slider
+                            value={[volumeLevel]}
+                            min={0}
+                            max={100}
+                            step={1}
+                            className="flex-1"
+                            onValueChange={(values) => setVolumeLevel(values[0])}
+                          />
+                          <Volume2 className="h-4 w-4 text-neutral-dark" />
+                        </div>
+                      </div>
+                      
+                      {/* Panneau de commandes avancées */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="flex-1 text-xs h-9"
+                            onClick={() => setParkCall(!parkCall)}
+                            disabled={!isCallInProgress}
+                          >
+                            {parkCall ? "Déparker" : "Parker l'appel"}
+                          </Button>
+                          
+                          <Button
+                            variant="outline" 
+                            size="sm"
+                            className="flex-1 text-xs h-9"
+                          >
+                            Conférence
+                          </Button>
+                        </div>
+                        
+                        <div className="flex justify-between space-x-2">
+                          <Button
+                            variant="outline" 
+                            size="sm"
+                            className="flex-1 text-xs h-9"
+                          >
+                            Transférer
+                          </Button>
+                          
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="flex-1 text-xs h-9"
+                            onClick={() => handleEndCall("HANGUP")}
+                            disabled={!isCallInProgress}
+                          >
+                            <PhoneOff className="h-3.5 w-3.5 mr-1" />
+                            Raccrocher
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Panneau d'informations sur l'état du système */}
+                      <div className="border-t pt-3 mt-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center text-neutral-dark">
+                            <Clock className="h-3 w-3 mr-1" />
+                            <span>Temps d'appel: {formatTime(callDuration)}</span>
+                          </div>
+                          <div className="flex items-center justify-end text-neutral-dark">
+                            <span>Campagne: {currentCall?.campaignName || "N/A"}</span>
+                          </div>
                         </div>
                       </div>
                     </CardContent>

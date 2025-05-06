@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, MicOff, Mic, PhoneOff, Clock, CheckCircle, XCircle, Pause, Play, VolumeX, Volume2, PhoneForwarded, UserPlus } from "lucide-react";
+import { MoreHorizontal, MicOff, Mic, PhoneOff, Clock, CheckCircle, XCircle, Pause, Play, 
+  VolumeX, Volume2, PhoneForwarded, UserPlus, AlertCircle, MessageSquare, ChevronDown,
+  ChevronUp, RefreshCw, BarChart, Settings, Headphones, Phone, List, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { 
   DropdownMenu,
@@ -16,13 +18,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function CallControls({ 
   callDuration, 
