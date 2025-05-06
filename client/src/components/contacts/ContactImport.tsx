@@ -41,7 +41,7 @@ export default function ContactImport({
   } | null>(null);
 
   // Get campaigns list
-  const { data: campaigns } = useQuery({
+  const { data: campaigns = [] } = useQuery<{id: number, name: string}[]>({
     queryKey: ["/api/campaigns/list"],
   });
 

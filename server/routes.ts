@@ -199,8 +199,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Lead management API
   app.post("/api/leads/validate", isAuthenticated, async (req, res) => {
     try {
-      // In a real implementation, this would process the uploaded CSV file
-      // and validate its contents
+      // Dans une vraie implémentation, nous utiliserions multer ou un autre middleware
+      // pour analyser le fichier CSV et valider chaque ligne
+      console.log('Validation de fichier demandée');
       
       // Simulating file validation response
       res.json({
@@ -214,6 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]
       });
     } catch (error) {
+      console.error("Error in /api/leads/validate:", error);
       res.status(500).json({ message: "Erreur lors de la validation du fichier" });
     }
   });
