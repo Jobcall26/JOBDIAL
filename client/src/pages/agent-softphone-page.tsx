@@ -25,7 +25,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSoftphone } from "@/hooks/use-softphone";
 import { useSounds } from "@/hooks/use-sounds";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
