@@ -3,14 +3,17 @@ import Layout from "@/components/layout/Layout";
 import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import StatusBadge from "@/components/common/StatusBadge";
 import UserAvatar from "@/components/common/UserAvatar";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, User, Clock, AlertCircle } from "lucide-react";
+import { Phone, User, Clock, AlertCircle, Headphones, HeadphoneOff, Volume2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type AgentStatus = {
   id: number;
@@ -53,6 +56,72 @@ export default function SupervisionPage() {
   const { isConnected, lastMessage } = useWebSocket();
   const [activeTab, setActiveTab] = useState<string>("agents");
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [activeSpyCallId, setActiveSpyCallId] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  // Mutation pour démarrer l'écoute d'un appel
+  const startSpyMutation = useMutation({
+    mutationFn: async (callId: string) => {
+      const res = await apiRequest("POST", `/api/calls/${callId}/spy`);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Écoute en cours",
+        description: "Vous êtes maintenant en écoute sur cet appel",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de démarrer l'écoute de l'appel",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutation pour arrêter l'écoute d'un appel
+  const stopSpyMutation = useMutation({
+    mutationFn: async (callId: string) => {
+      const res = await apiRequest("POST", `/api/calls/${callId}/spy/stop`);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Écoute terminée",
+        description: "Vous avez arrêté l'écoute de l'appel",
+      });
+      setActiveSpyCallId(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'arrêter l'écoute de l'appel",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Fonction pour démarrer l'écoute
+  const startSpying = (callId: string) => {
+    if (activeSpyCallId) {
+      toast({
+        title: "Écoute déjà en cours",
+        description: "Veuillez d'abord arrêter l'écoute en cours",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    startSpyMutation.mutate(callId);
+    setActiveSpyCallId(callId);
+  };
+  
+  // Fonction pour arrêter l'écoute
+  const stopSpying = () => {
+    if (!activeSpyCallId) return;
+    stopSpyMutation.mutate(activeSpyCallId);
+  };
 
   // Fetch initial supervision data
   const { data: supervisionData, refetch } = useQuery<{

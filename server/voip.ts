@@ -1,6 +1,7 @@
 import type { Express } from "express";
-import { isAuthenticated } from "./auth";
+import { isAuthenticated, isAdmin } from "./auth";
 import { storage } from "./storage";
+import { notifySupervisors } from "./websockets";
 
 export function setupVoipRoutes(app: Express) {
   // Connect to Twilio/WebRTC
@@ -157,6 +158,124 @@ export function setupVoipRoutes(app: Express) {
     } catch (error) {
       console.error("Error getting agent campaigns:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des campagnes de l'agent" });
+    }
+  });
+  
+  // Fonctionnalité d'écoute en temps réel (spy) - Réservée aux administrateurs
+  app.post("/api/calls/:callId/spy", isAdmin, async (req, res) => {
+    try {
+      const { callId } = req.params;
+      
+      if (!callId) {
+        return res.status(400).json({ message: "ID d'appel requis" });
+      }
+      
+      // Dans une vraie implémentation, cela devrait :
+      // 1. Vérifier si l'appel existe et est actif
+      // 2. Initialiser la connexion Twilio/WebRTC en mode écoute sans émission (mode spy)
+      
+      // Notification du superviseur qui écoute maintenant l'appel
+      notifySupervisors({
+        type: "spy_started",
+        data: {
+          callId,
+          supervisorId: req.user.id,
+          supervisorName: req.user.username,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      res.json({ 
+        success: true,
+        message: "Écoute démarrée" 
+      });
+    } catch (error) {
+      console.error("Error starting spy mode:", error);
+      res.status(500).json({ message: "Erreur lors du démarrage de l'écoute" });
+    }
+  });
+  
+  // Arrêter l'écoute en temps réel
+  app.post("/api/calls/:callId/spy/stop", isAdmin, async (req, res) => {
+    try {
+      const { callId } = req.params;
+      
+      if (!callId) {
+        return res.status(400).json({ message: "ID d'appel requis" });
+      }
+      
+      // Dans une vraie implémentation, cela devrait :
+      // 1. Terminer la connexion d'écoute Twilio/WebRTC
+      
+      // Notification de fin d'écoute
+      notifySupervisors({
+        type: "spy_stopped",
+        data: {
+          callId,
+          supervisorId: req.user.id,
+          supervisorName: req.user.username,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      res.json({ 
+        success: true,
+        message: "Écoute terminée" 
+      });
+    } catch (error) {
+      console.error("Error stopping spy mode:", error);
+      res.status(500).json({ message: "Erreur lors de l'arrêt de l'écoute" });
+    }
+  });
+  
+  // Obtenir la liste des appels actifs pour l'écoute
+  app.get("/api/calls/active", isAdmin, async (req, res) => {
+    try {
+      // Dans une vraie implémentation, cela devrait :
+      // 1. Récupérer tous les appels actuellement actifs dans la base de données
+      
+      // Réponse simulée
+      res.json([
+        {
+          id: "call-123456",
+          agent: {
+            id: 2,
+            username: "Emilie Laurent"
+          },
+          contact: {
+            name: "Martin Bernard",
+            phone: "06 12 34 56 78"
+          },
+          campaign: {
+            id: 1,
+            name: "Assurance Santé Q3"
+          },
+          startTime: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
+          duration: "5:03",
+          status: "in-progress"
+        },
+        {
+          id: "call-789012",
+          agent: {
+            id: 3,
+            username: "Thomas Moreau"
+          },
+          contact: {
+            name: "Catherine Petit",
+            phone: "07 98 76 54 32"
+          },
+          campaign: {
+            id: 2,
+            name: "Renouvellement Internet"
+          },
+          startTime: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+          duration: "2:14",
+          status: "in-progress"
+        }
+      ]);
+    } catch (error) {
+      console.error("Error getting active calls:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des appels actifs" });
     }
   });
 }
