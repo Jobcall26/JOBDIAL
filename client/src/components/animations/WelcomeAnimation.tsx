@@ -1,138 +1,130 @@
+
 import { motion, useAnimate } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 
 export default function WelcomeAnimation() {
-  const { user } = useAuth();
   const [scope, animate] = useAnimate();
   
-  // Force l'animation à se terminer et à disparaître après 3.5 secondes
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Animation de sortie
       animate(scope.current, { opacity: 0 }, { duration: 0.5 })
         .then(() => {
-          // Informer le parent que l'animation est terminée via un événement personnalisé
           document.dispatchEvent(new Event('welcomeAnimationComplete'));
-          
-          // S'assurer que l'élément est invisible
           const element = document.querySelector('.welcome-animation-container');
           if (element) {
             (element as HTMLElement).style.display = 'none';
           }
         });
-    }, 3500); // Un peu moins que les 4 secondes totales pour permettre l'animation de sortie
+    }, 3500);
     
     return () => clearTimeout(timer);
   }, [animate]);
-  
+
   return (
     <motion.div
       ref={scope}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 welcome-animation-container"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black welcome-animation-container overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }} // Animation plus rapide
-      key="welcome-animation" // Clé unique pour aider AnimatePresence à tracker l'élément
     >
+      {/* Grille de fond animée */}
       <motion.div 
-        className="relative"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 20 }} // Plus rapide
-      >
-        <motion.div 
-          className="text-center mb-6"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }} // Plus rapide
-        >
-          <motion.div 
-            className="gradient-bg text-white text-4xl md:text-6xl font-bold py-4 px-6 rounded-xl inline-block mb-3"
-            animate={{ 
-              scale: [1, 1.05, 1],
-              rotate: [0, 2, 0], 
-            }}
-            transition={{ 
-              duration: 1.0, 
-              ease: "easeInOut", 
-              times: [0, 0.5, 1],
-              delay: 0.4,
-            }}
-          >
-            <span className="tracking-wide">JOBDIAL</span>
-          </motion.div>
-          
+        className="absolute inset-0 opacity-20"
+        initial={{ scale: 1.1 }}
+        animate={{ 
+          scale: 1,
+          backgroundImage: "linear-gradient(0deg, transparent 24%, #0066cc 25%, #0066cc 26%, transparent 27%, transparent 74%, #0066cc 75%, #0066cc 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, #0066cc 25%, #0066cc 26%, transparent 27%, transparent 74%, #0066cc 75%, #0066cc 76%, transparent 77%, transparent)",
+          backgroundSize: '50px 50px'
+        }}
+        style={{ 
+          background: '#000',
+        }}
+      />
+
+      {/* Particules numériques */}
+      <motion.div className="absolute inset-0">
+        {Array.from({ length: 30 }).map((_, i) => (
           <motion.div
-            className="text-white text-xl md:text-2xl font-medium"
+            key={i}
+            className="absolute w-1 h-1 bg-blue-500"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, Math.random() * 100 - 50],
+              opacity: [0, 1, 0],
+              scale: [0, 1, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatType: "loop",
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </motion.div>
+
+      {/* Message principal */}
+      <div className="relative z-10 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="text-4xl md:text-6xl font-bold mb-4 text-white tracking-wider"
+        >
+          <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
+            transition={{ delay: 1, duration: 0.3 }}
           >
-            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-              Bienvenue, 
-            </motion.span>
-            <motion.span 
-              className="text-primary font-bold"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              {user?.username || 'Utilisateur'}
-            </motion.span>
-            <motion.span 
-              className="text-secondary"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, scale: [1, 1.2, 1] }}
-              transition={{ delay: 0.8, duration: 0.4 }}
-            >
-              !
-            </motion.span>
-          </motion.div>
+            Bienvenue sur
+          </motion.span>
         </motion.div>
 
-        <motion.div 
-          className="mt-4 text-center text-white text-lg"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.3 }}
+        <motion.div
+          className="text-5xl md:text-7xl font-bold text-blue-500 mb-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ 
+            delay: 1.5,
+            type: "spring",
+            stiffness: 200
+          }}
         >
-          {user?.role === 'admin' ? (
-            "Centre d'administration du CRM"
-          ) : (
-            "Centre d'appels et gestion des contacts"
-          )}
+          <motion.span
+            animate={{
+              textShadow: [
+                "0 0 10px #0066cc",
+                "0 0 20px #0066cc",
+                "0 0 10px #0066cc"
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}
+          >
+            JOBDIAL
+          </motion.span>
         </motion.div>
+      </div>
 
-        {/* Particles animées autour du logo - réduites et plus rapides */}
-        <motion.div className="absolute inset-0 -z-10 overflow-hidden">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute rounded-full ${
-                i % 2 === 0 ? 'bg-primary w-2 h-2' : 'bg-secondary w-1 h-1'
-              } opacity-60`}
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                x: [0, Math.random() * 80 - 40],
-                y: [0, Math.random() * 80 - 40],
-                opacity: [0.6, 0],
-                scale: [1, 0],
-              }}
-              transition={{
-                duration: 1.5 + Math.random() * 1.5, // Plus rapide
-                delay: Math.random() * 0.5, // Délai plus court
-                repeat: 1, // Une seule répétition
-                ease: "easeOut",
-              }}
-            />
-          ))}
-        </motion.div>
-      </motion.div>
+      {/* Scanner effect */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
+        initial={{ y: "-100%" }}
+        animate={{ y: "100%" }}
+        transition={{
+          duration: 2,
+          delay: 0.5,
+          ease: "linear"
+        }}
+      />
     </motion.div>
   );
 }

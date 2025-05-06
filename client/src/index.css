@@ -1,3 +1,18 @@
+
+@keyframes matrix-rain {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 100%;
+  }
+}
+
+.welcome-animation-container {
+  background-color: #000;
+  background-image: radial-gradient(circle at center, #001233 0%, #000 100%);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
