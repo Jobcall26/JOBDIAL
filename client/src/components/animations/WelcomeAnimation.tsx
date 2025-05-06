@@ -22,14 +22,24 @@ export default function WelcomeAnimation() {
         });
     }, 6000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      document.dispatchEvent(new Event('welcomeAnimationComplete'));
+    };
   }, [animate]);
+
+  useEffect(() => {
+    const element = document.querySelector('.welcome-animation-container');
+    if (element) {
+      (element as HTMLElement).style.zIndex = '9999';
+    }
+  }, []);
 
   if (!user) {
     return (
       <motion.div
         ref={scope}
-        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
+        className="welcome-animation-container fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
         style={{
           background: `radial-gradient(circle at center, rgba(0,0,0,0.9) 0%, rgba(0,0,0,1) 100%)`,
         }}
