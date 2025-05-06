@@ -259,6 +259,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  app.get("/api/contacts/filter-options", isAuthenticated, async (req, res) => {
+    try {
+      const options = await storage.getContactFilterOptions();
+      res.json(options);
+    } catch (error) {
+      console.error("Error in /api/contacts/filter-options:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des options de filtre" });
+    }
+  });
+  
   app.get("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const contactId = parseInt(req.params.id);
@@ -285,6 +295,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  app.post("/api/contacts/import", isAuthenticated, async (req, res) => {
+    try {
+      // Vérifier si un fichier a été téléchargé
+      if (!req.body.data || !Array.isArray(req.body.data)) {
+        return res.status(400).json({ message: "Aucune donnée valide à importer" });
+      }
+      
+      const campaignId = req.body.campaignId ? parseInt(req.body.campaignId) : undefined;
+      const importedCount = req.body.data.length;
+      
+      // Traiter les données et créer les contacts
+      const createdContacts = [];
+      for (const contactData of req.body.data) {
+        // Ajouter le campaignId si fourni
+        if (campaignId) {
+          contactData.campaignId = campaignId;
+        }
+        
+        // Créer le contact
+        try {
+          const contact = await storage.createContact(contactData);
+          createdContacts.push(contact);
+        } catch (err) {
+          console.error("Erreur lors de la création d'un contact:", err);
+          // Continuer avec le prochain contact malgré l'erreur
+        }
+      }
+      
+      res.status(201).json({
+        message: `${createdContacts.length} contacts importés avec succès sur ${importedCount} fournis`,
+        created: createdContacts.length,
+        total: importedCount
+      });
+    } catch (error) {
+      console.error("Error in POST /api/contacts/import:", error);
+      res.status(500).json({ message: "Erreur lors de l'importation des contacts" });
+    }
+  });
+  
   app.put("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const contactId = parseInt(req.params.id);
@@ -298,16 +347,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in PUT /api/contacts/:id:", error);
       res.status(500).json({ message: "Erreur lors de la mise à jour du contact" });
-    }
-  });
-  
-  app.get("/api/contacts/filter-options", isAuthenticated, async (req, res) => {
-    try {
-      const options = await storage.getContactFilterOptions();
-      res.json(options);
-    } catch (error) {
-      console.error("Error in /api/contacts/filter-options:", error);
-      res.status(500).json({ message: "Erreur lors de la récupération des options de filtre" });
     }
   });
 

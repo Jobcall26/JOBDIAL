@@ -76,13 +76,32 @@ export default function ContactImport({
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!file || !campaignId) {
-        throw new Error("Fichier ou campagne manquant");
+      if (!file) {
+        throw new Error("Fichier manquant");
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("campaignId", campaignId);
+      // Lecture du fichier CSV
+      const text = await file.text();
+      
+      // Parse CSV
+      const rows = text.split('\n');
+      const headers = rows[0].split(',');
+      
+      // Préparer les données d'import
+      const data = [];
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+        
+        const values = rows[i].split(',');
+        const contact = {};
+        
+        headers.forEach((header, index) => {
+          const key = header.trim();
+          contact[key] = values[index]?.trim() || '';
+        });
+        
+        data.push(contact);
+      }
       
       // Simulate upload progress
       const interval = setInterval(() => {
@@ -93,18 +112,21 @@ export default function ContactImport({
       }, 200);
       
       try {
-        const res = await fetch("/api/leads/import", {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        });
+        // Utiliser l'URL d'API appropriée selon que la campagne est sélectionnée ou non
+        const url = campaignId 
+          ? "/api/leads/import" 
+          : "/api/contacts/import";
+        
+        // Préparer le payload
+        const payload = { 
+          data,
+          ...(campaignId ? { campaignId } : {})
+        };
+        
+        const res = await apiRequest("POST", url, payload);
         
         clearInterval(interval);
         setUploadProgress(100);
-        
-        if (!res.ok) {
-          throw new Error("Erreur lors de l'import");
-        }
         
         return await res.json();
       } catch (error) {
