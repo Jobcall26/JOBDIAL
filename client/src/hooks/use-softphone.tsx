@@ -250,5 +250,37 @@ export function useSoftphone() {
   const [isRecording, setIsRecording] = useState(false);
   const [callQuality, setCallQuality] = useState<number>(100);
   const [networkLatency, setNetworkLatency] = useState<number>(0);
-  return {...context, dialMode, setDialMode, isRecording, setIsRecording, callQuality, setCallQuality, networkLatency, setNetworkLatency};
+  const [autoDialLevel, setAutoDialLevel] = useState<number>(1);
+  const [autoDialMode, setAutoDialMode] = useState<"progressive" | "predictive" | "power">("progressive");
+  const [autoDialActive, setAutoDialActive] = useState<boolean>(false);
+  const [hopper, setHopper] = useState<{loaded: number, total: number}>({loaded: 0, total: 0});
+  const [viciDialStats, setViciDialStats] = useState({
+    callsAttempted: 0,
+    callsAnswered: 0,
+    contactRate: 0,
+    avgWaitTime: 0,
+    dropRate: 0
+  });
+  
+  return {
+    ...context, 
+    dialMode, 
+    setDialMode, 
+    isRecording, 
+    setIsRecording, 
+    callQuality, 
+    setCallQuality, 
+    networkLatency, 
+    setNetworkLatency,
+    autoDialLevel,
+    setAutoDialLevel,
+    autoDialMode,
+    setAutoDialMode,
+    autoDialActive,
+    setAutoDialActive,
+    hopper,
+    setHopper,
+    viciDialStats,
+    setViciDialStats
+  };
 }
