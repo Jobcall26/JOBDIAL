@@ -113,7 +113,7 @@ export default function WelcomeAnimation() {
                   backgroundImage: `linear-gradient(135deg, white, ${primaryColor})`,
                 }}
               >
-                Bienvenue Agent JOBDIAL
+                Bienvenue {user?.username}
               </motion.h1>
             </motion.div>
             <div className="space-y-3">
