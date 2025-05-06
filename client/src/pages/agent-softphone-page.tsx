@@ -26,7 +26,13 @@ import { useSoftphone } from "@/hooks/use-softphone";
 import { useSounds } from "@/hooks/use-sounds";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Phone, PhoneCall, PhoneOff, User, Clock, Calendar, SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause, Settings, BookOpen, DoorOpen, LogOut } from "lucide-react";
+import { 
+  Phone, PhoneCall, PhoneOff, PhoneForwarded, User, UserPlus, Clock, Calendar, 
+  SkipForward, Save, Mic, MicOff, Volume2, VolumeX, Coffee, PlayCircle, Pause, 
+  Settings, BookOpen, DoorOpen, LogOut, MessageSquare, MessageCircle, Headphones, 
+  CheckCircle, XCircle, MoreHorizontal, ChevronDown, ChevronUp, RefreshCw, 
+  BarChart, AlertCircle, List
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -80,6 +86,25 @@ export default function AgentSoftphonePage() {
   const [callLog, setCallLog] = useState<string[]>([]);
   const [webFormUrl, setWebFormUrl] = useState<string>("");
   const [leadScore, setLeadScore] = useState<number | null>(null);
+  const [callbackTime, setCallbackTime] = useState<string>("");
+  const [callbackDate, setCallbackDate] = useState<string>("");
+  const [hotkeysEnabled, setHotkeysEnabled] = useState<boolean>(true);
+  const [autoDialNext, setAutoDialNext] = useState<boolean>(false);
+  const [dialAttempts, setDialAttempts] = useState<number>(0);
+  const [showCallComments, setShowCallComments] = useState<boolean>(false);
+  const [callTags, setCallTags] = useState<string[]>([]);
+  const [qualityScore, setQualityScore] = useState<number>(0);
+  const [transferOptions, setTransferOptions] = useState<{id: number, name: string, type: string}[]>([
+    {id: 1, name: "Service client", type: "interne"},
+    {id: 2, name: "Support technique", type: "interne"},
+    {id: 3, name: "Superviseur", type: "interne"}
+  ]);
+  const [alertType, setAlertType] = useState<"none" | "success" | "warning" | "error">("none");
+  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [hangupReason, setHangupReason] = useState<string>("");
+  const [agentScript, setAgentScript] = useState<{sections: {title: string, content: string}[]}>({
+    sections: []
+  });
   
   // Fetch all campaigns for manual and auto-dialing
   const { data: campaigns } = useQuery<{
