@@ -215,8 +215,8 @@ export default function SupervisionPage() {
 
         <Card>
           <CardContent className="p-4">
-            <div className="flex justify-between items-center h-full">
-              <div className="text-sm">
+            <div className="flex justify-between items-center">
+              <div className="text-sm flex flex-col">
                 Statut supervision :{" "}
                 <span className={isConnected ? "text-[#10B981]" : "text-[#EF4444]"}>
                   {isConnected ? "Connecté" : "Déconnecté"}
@@ -276,6 +276,9 @@ export default function SupervisionPage() {
                           <th className="px-3 py-2 text-left text-xs font-medium text-neutral-dark uppercase tracking-wider">
                             Appel en cours
                           </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-neutral-dark uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-light">
@@ -316,11 +319,48 @@ export default function SupervisionPage() {
                                   <span className="text-neutral-dark text-sm">-</span>
                                 )}
                               </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-right">
+                                {agent.status === "on_call" && agent.currentCall ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        {activeSpyCallId === agent.currentCall.id ? (
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            onClick={() => stopSpying()}
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-100"
+                                          >
+                                            <HeadphoneOff className="h-4 w-4" />
+                                          </Button>
+                                        ) : (
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            onClick={() => startSpying(agent.currentCall.id)}
+                                            className="text-primary hover:text-primary-dark hover:bg-primary-lightest"
+                                            disabled={!!activeSpyCallId}
+                                          >
+                                            <Headphones className="h-4 w-4" />
+                                          </Button>
+                                        )}
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {activeSpyCallId === agent.currentCall.id 
+                                          ? "Arrêter l'écoute" 
+                                          : "Écouter l'appel"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  <span className="text-neutral-dark text-sm">-</span>
+                                )}
+                              </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={4} className="px-3 py-4 text-center text-neutral-dark">
+                            <td colSpan={5} className="px-3 py-4 text-center text-neutral-dark">
                               Aucun agent connecté
                             </td>
                           </tr>
