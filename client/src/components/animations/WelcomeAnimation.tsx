@@ -18,9 +18,16 @@ export default function WelcomeAnimation() {
           const element = document.querySelector('.welcome-animation-container');
           if (element) {
             (element as HTMLElement).style.display = 'none';
+            (element as HTMLElement).style.pointerEvents = 'none';
           }
         });
     }, 6000);
+
+    // Assurer que l'animation ne bloque pas l'interaction
+    const element = document.querySelector('.welcome-animation-container');
+    if (element) {
+      (element as HTMLElement).style.pointerEvents = 'none';
+    }
 
     return () => {
       clearTimeout(timer);
