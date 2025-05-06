@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
+import { AnimatePresence } from "framer-motion";
+import WelcomeAnimation from "@/components/animations/WelcomeAnimation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,15 +29,17 @@ import { motion } from 'framer-motion';
 
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [showAnimation, setShowAnimation] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowAnimation(false);
-    }, 4500);
-    return () => clearTimeout(timer);
-  }, []);
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+    if (!user) {
+      const timer = setTimeout(() => {
+        setShowAnimation(false);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
