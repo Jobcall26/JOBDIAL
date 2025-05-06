@@ -220,10 +220,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/leads/import", isAuthenticated, async (req, res) => {
     try {
-      const { campaignId } = req.body;
+      // Dans une vraie implémentation, nous utiliserions multer ou un autre middleware
+      // pour gérer l'upload de fichiers. Pour l'instant, nous simulons la réponse.
+      console.log('Import de contacts demandé');
       
-      // In a real implementation, this would process the uploaded CSV file
-      // and import the leads into the database
+      // Récupérer campaignId depuis FormData ou corps JSON
+      const campaignId = req.body.campaignId;
+      console.log(`Import de contacts pour la campagne ${campaignId}`);
       
       // Simulating import response
       res.json({
@@ -232,6 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         skipped: 2
       });
     } catch (error) {
+      console.error("Error in /api/leads/import:", error);
       res.status(500).json({ message: "Erreur lors de l'import des leads" });
     }
   });

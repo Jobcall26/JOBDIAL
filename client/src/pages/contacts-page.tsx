@@ -15,6 +15,7 @@ import {
   Mail,
   Plus,
 } from "lucide-react";
+import ContactImport from "@/components/contacts/ContactImport";
 import Pagination from "@/components/common/Pagination";
 import {
   DropdownMenu,
@@ -143,6 +144,7 @@ export default function ContactsPage() {
                 <Filter className="h-4 w-4 mr-1" />
                 Filtrer
               </Button>
+              <ContactImport />
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-1" />
                 Exporter
