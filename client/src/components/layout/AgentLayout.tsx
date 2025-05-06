@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, Menu, Phone, User, ChevronRight, Clock, FileText, BarChart, WifiOff, Wifi } from "lucide-react";
 import { useSoftphone } from "@/hooks/use-softphone";
 import { useWebSocket } from "@/hooks/use-websocket";
@@ -43,7 +42,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="mr-4 p-2 hover:bg-primary-dark rounded-full transition-colors"
           >
-            <Menu className="h-6 w-6" />
+            {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         )}
         <div className="flex items-center">
@@ -58,7 +57,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
         <div className="text-sm font-medium hidden md:block">
           {currentTime.toLocaleTimeString()}
         </div>
-        
+
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -141,23 +140,9 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
 
   // Mobile sidebar (only visible when toggled)
   const MobileSidebar = () => (
-    <AnimatePresence>
+    <div> {/* Removed AnimatePresence */}
       {isSidebarOpen && (
-        <>
-          <motion.div
-            className="fixed inset-0 bg-black/50 z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)}
-          />
-          <motion.div
-            className="fixed top-0 left-0 z-50 w-64 h-full bg-white shadow-xl"
-            initial={{ x: -320 }}
-            animate={{ x: 0 }}
-            exit={{ x: -320 }}
-            transition={{ duration: 0.3 }}
-          >
+        <div className="fixed top-0 left-0 z-50 w-64 h-full bg-white shadow-xl"> {/* Removed motion.div */}
             <div className="flex justify-between items-center p-4 border-b">
               <div className="font-bold text-xl">JOBDIAL</div>
               <Button
@@ -223,10 +208,9 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
                 </div>
               </div>
             </div>
-          </motion.div>
-        </>
+          </div>
       )}
-    </AnimatePresence>
+    </div>
   );
 
   return (
