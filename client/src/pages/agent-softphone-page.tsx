@@ -947,6 +947,47 @@ export default function AgentSoftphonePage() {
           </Card>
         </div>
       </div>
+
+      {/* Conseils d'utilisation */}
+      <div className="mt-6 bg-white rounded-lg p-4 border border-neutral-light">
+        <h3 className="text-lg font-medium mb-3">Conseils d&apos;utilisation</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-3 border border-neutral-light rounded-lg">
+            <div className="flex items-center text-primary mb-2">
+              <Phone className="h-5 w-5 mr-2" />
+              <span className="font-medium">Avant l&apos;appel</span>
+            </div>
+            <p className="text-sm text-neutral-dark">
+              Vérifiez votre connexion internet et le volume de votre micro. Connectez-vous au softphone et sélectionnez une campagne avant de commencer.
+            </p>
+          </div>
+          
+          <div className="p-3 border border-neutral-light rounded-lg">
+            <div className="flex items-center text-primary mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+              <span className="font-medium">Pendant l&apos;appel</span>
+            </div>
+            <p className="text-sm text-neutral-dark">
+              Restez professionnel et suivez le script. Écoutez attentivement le client et prenez des notes si nécessaire. Utilisez les raccourcis clavier pour plus d&apos;efficacité.
+            </p>
+          </div>
+
+          <div className="p-3 border border-neutral-light rounded-lg">
+            <div className="flex items-center text-primary mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <span className="font-medium">Après l&apos;appel</span>
+            </div>
+            <p className="text-sm text-neutral-dark">
+              Complétez vos notes et qualifiez l&apos;appel correctement. Prenez une courte pause si nécessaire avant le prochain appel. Vérifiez vos rappels programmés.
+            </p>
+          </div>
+        </div>
+      </div>
     </AgentLayout>
   );
 }
