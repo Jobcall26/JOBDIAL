@@ -1,0 +1,36 @@
+Conserve l’animation vidéo existante strictement telle quelle, sans la modifier, sans remplacer ou altérer ses visuels, sa structure, ses transitions ou son ambiance. Aucun changement, effet, filtre, ou superposition ne doit être appliqué à l’animation d’origine. Cette séquence reste la base intacte.
+
+L’objectif est d’ajouter une courte animation d’introduction distincte (ou de conclusion), d’une durée comprise entre 2 et 4 secondes maximum, qui précède ou suit la vidéo déjà existante, selon les besoins. Cette animation additionnelle doit être fluide, immersive, dans un style futuriste, professionnel et légèrement “gamer”, cohérent avec un CRM moderne destiné à des centres d’appels. Le style visuel doit rappeler des interfaces HUD (têtes haute), cyberpunk ou technologiques, tout en gardant une présentation claire et lisible.
+
+Le contenu de cette animation ajoutée doit inclure uniquement le message :
+“Bienvenue sur JOBDIAL”
+Le texte peut apparaître avec un effet glitch numérique, saisie automatique (typewriting effect), scanner lumineux, flash néon, ou scan horizontal, selon le style le plus cohérent avec l’animation principale. La police doit être moderne, digitale, lisible — inspirée par Orbitron, Exo, Share Tech Mono, ou d’autres typographies futuristes.
+
+L’arrière-plan de cette séquence doit être en harmonie visuelle avec l’animation existante :
+– fond sombre (noir ou gris anthracite),
+– éléments lumineux discrets (particules, lignes de circuit, halo numérique),
+– couleurs dominantes : bleu électrique, vert néon, blanc ou cyan,
+– ambiance subtilement animée : effets de lumière ou de balayage lent.
+
+Le ton général doit transmettre un sentiment de lancement de système, connexion sécurisée, ou accès à une interface intelligente, tout en étant dynamique et motivant. L’utilisateur doit sentir qu’il entre dans un univers digital professionnel, prêt à travailler, avec une interface de nouvelle génération.
+
+⚠️ IMPORTANT :
+– Ne superpose aucun élément à la vidéo actuelle.
+– Ne coupe aucune partie de l’animation existante.
+– Ne ralentis, n’accélère ni n’altère aucun rythme ou son.
+– L’animation de bienvenue doit être un bloc indépendant, ajouté avant ou après la vidéo.
+– Pas d’audio obligatoire, mais si utilisé : sons discrets, digitaux, futuristes (ex. : bip, balayage, effet système).
+
+📦 Livrable souhaité :
+– Format : MP4, WebM, MOV ou Lottie JSON
+– Résolution : identique à la vidéo existante (HD, 4K, selon source)
+– Durée de l’ajout : entre 2 et 4 secondes maximum
+– Vidéo complète finale = Intro JOBDIAL (2–4s) + animation existante (inchangée)
+– Animation de bienvenue peut aussi être livrée à part, si besoin d'intégration manuelle.
+
+💡 Exemples visuels inspirants :
+– HUD cybernétique (style Call of Duty, Watch Dogs, Deus Ex)
+– Interfaces IA ou centrales tactiques
+– Ouvertures d’applications tech pro (type GitHub Copilot, Terminal futuriste, Intelcia)
+
+🎯 Objectif final : captiver l’utilisateur dès l’ouverture de la plateforme JOBDIAL, créer une première impression de puissance, de modernité et de motivation, sans perturber le flux existant. Donner envie de travailler dans un outil intelligent, visuellement fort, mais ergonomique.
