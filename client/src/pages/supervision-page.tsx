@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
-import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import StatusBadge from "@/components/common/StatusBadge";
+import PageHeader from "@/components/common/PageHeader";
 import UserAvatar from "@/components/common/UserAvatar";
+import StatusBadge from "@/components/common/StatusBadge";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -217,19 +217,40 @@ export default function SupervisionPage() {
           <CardContent className="p-4">
             <div className="flex justify-between items-center">
               <div className="text-sm flex flex-col">
-                Statut supervision :{" "}
-                <span className={isConnected ? "text-[#10B981]" : "text-[#EF4444]"}>
-                  {isConnected ? "Connecté" : "Déconnecté"}
-                </span>
+                <div className="mb-1">
+                  Statut supervision :{" "}
+                  <span className={isConnected ? "text-[#10B981]" : "text-[#EF4444]"}>                  
+                    {isConnected ? "Connecté" : "Déconnecté"}
+                  </span>
+                </div>
+                {activeSpyCallId && (
+                  <div className="flex items-center text-primary-dark text-xs">
+                    <Headphones className="h-3 w-3 mr-1" />
+                    <span>Écoute en cours...</span>
+                  </div>
+                )}
               </div>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => refetch()}
-                className="text-xs"
-              >
-                Actualiser
-              </Button>
+              <div className="flex">
+                {activeSpyCallId && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => stopSpying()}
+                    className="text-xs mr-2"
+                  >
+                    <HeadphoneOff className="h-3 w-3 mr-1" />
+                    Arrêter
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => refetch()}
+                  className="text-xs"
+                >
+                  Actualiser
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -324,7 +345,7 @@ export default function SupervisionPage() {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        {activeSpyCallId === agent.currentCall.id ? (
+                                        {agent.currentCall && activeSpyCallId === agent.currentCall.id ? (
                                           <Button 
                                             variant="ghost" 
                                             size="icon"
@@ -337,7 +358,7 @@ export default function SupervisionPage() {
                                           <Button 
                                             variant="ghost" 
                                             size="icon"
-                                            onClick={() => startSpying(agent.currentCall.id)}
+                                            onClick={() => agent.currentCall && startSpying(agent.currentCall.id)}
                                             className="text-primary hover:text-primary-dark hover:bg-primary-lightest"
                                             disabled={!!activeSpyCallId}
                                           >
@@ -346,7 +367,7 @@ export default function SupervisionPage() {
                                         )}
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        {activeSpyCallId === agent.currentCall.id 
+                                        {agent.currentCall && activeSpyCallId === agent.currentCall.id 
                                           ? "Arrêter l'écoute" 
                                           : "Écouter l'appel"}
                                       </TooltipContent>
@@ -524,46 +545,35 @@ export default function SupervisionPage() {
                   alerts.map((alert) => (
                     <div
                       key={alert.id}
-                      className={`p-3 rounded-lg border ${
+                      className={`flex p-3 rounded-md ${
                         alert.type === "error"
-                          ? "border-[#EF4444]/30 bg-[#EF4444]/5"
+                          ? "bg-[#EF4444]/10"
                           : alert.type === "warning"
-                          ? "border-[#F59E0B]/30 bg-[#F59E0B]/5"
-                          : "border-[#5170FF]/30 bg-[#5170FF]/5"
+                          ? "bg-[#F59E0B]/10"
+                          : "bg-[#10B981]/10"
                       }`}
                     >
-                      <div className="flex items-start">
-                        <div
-                          className={`p-1 rounded-full mr-3 ${
+                      <div className="flex-shrink-0 mr-3">
+                        <AlertCircle
+                          className={`h-5 w-5 ${
                             alert.type === "error"
                               ? "text-[#EF4444]"
                               : alert.type === "warning"
                               ? "text-[#F59E0B]"
-                              : "text-[#5170FF]"
+                              : "text-[#10B981]"
                           }`}
-                        >
-                          <AlertCircle className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1">
-                          <div
-                            className={`text-sm ${
-                              alert.type === "error"
-                                ? "text-[#EF4444]"
-                                : alert.type === "warning"
-                                ? "text-[#F59E0B]"
-                                : "text-[#5170FF]"
-                            }`}
-                          >
-                            {alert.message}
-                          </div>
-                          <div className="text-xs text-neutral-dark mt-1">{alert.timestamp}</div>
-                        </div>
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{alert.message}</div>
+                        <div className="text-xs text-neutral-dark mt-1">{alert.timestamp}</div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-neutral-dark">
-                    Aucune alerte pour le moment
+                  <div className="text-center text-neutral-dark py-8">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-2 text-neutral-mid" />
+                    <p>Aucune alerte pour le moment</p>
                   </div>
                 )}
               </div>
