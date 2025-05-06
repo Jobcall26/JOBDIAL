@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreHorizontal, MicOff, Mic, PhoneOff, Clock, CheckCircle, XCircle } from "lucide-react";
+import { MoreHorizontal, MicOff, Mic, PhoneOff, Clock, CheckCircle, XCircle, Pause, Play, VolumeX, Volume2, PhoneForwarded, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { 
   DropdownMenu,
@@ -8,21 +8,47 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export default function CallControls({ 
   callDuration, 
-  onEndCall 
+  onEndCall,
+  onAnswer,
+  onHangup,
+  onHold,
+  onUnhold,
+  onTransfer
 }: { 
   callDuration: string; 
   onEndCall: (result: string) => void;
+  onAnswer: () => void;
+  onHangup: () => void;
+  onHold: () => void;
+  onUnhold: () => void;
+  onTransfer: (type:string, number:string) => void;
 }) {
   const [isMuted, setIsMuted] = useState(false);
-  
+  const [isHold, setIsHold] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [transferNumber, setTransferNumber] = useState("");
+  const [transferType, setTransferType] = useState("blind");
+
+
   const handleToggleMute = () => {
     setIsMuted(!isMuted);
     // Implement actual mute functionality here
   };
-  
+
+  const handleTransfer = () => {
+    onTransfer(transferType, transferNumber);
+    setIsTransferDialogOpen(false);
+    setTransferNumber("");
+  };
+
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -44,7 +70,7 @@ export default function CallControls({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
         <div className="flex flex-col space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <Button
@@ -72,8 +98,8 @@ export default function CallControls({
               <span className="text-xs">Rappel</span>
             </Button>
           </div>
-          
-          <div className="grid grid-cols-2 gap-2 mt-2">
+
+          <div className="grid grid-cols-3 gap-2 mt-2">
             <Button
               variant="outline"
               onClick={handleToggleMute}
@@ -92,13 +118,88 @@ export default function CallControls({
               )}
             </Button>
             <Button
-              variant="destructive"
-              onClick={() => onEndCall("absent")}
+              variant="outline"
+              onClick={() => {setIsHold(!isHold); onHold();}}
+              className={isHold ? "bg-amber-50" : ""}
             >
+              {isHold ? (
+                <Play className="h-4 w-4 mr-2 text-amber-500" />
+              ) : (
+                <Pause className="h-4 w-4 mr-2" />
+              )}
+              {isHold ? "Resume" : "Hold"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsTransferDialogOpen(true)}
+            >
+              <PhoneForwarded className="h-4 w-4 mr-2" />
+              Transfer
+            </Button>
+          </div>
+          <div className="border rounded-md p-3 bg-neutral-50 mb-4 mt-2">
+            <div className="text-sm font-medium mb-2">Quick Controls</div>
+            <div className="grid grid-cols-2 gap-2">
+              <Badge variant="outline" className="cursor-pointer hover:bg-neutral-100">
+                F2: Quick Note
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-neutral-100">
+                F4: Transfer
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-neutral-100">
+                F6: Hold
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-neutral-100">
+                F8: Hangup
+              </Badge>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Button variant="outline" onClick={onAnswer}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Answer
+            </Button>
+            <Button variant="destructive" onClick={onHangup}>
               <PhoneOff className="h-4 w-4 mr-2" />
               Raccrocher
             </Button>
           </div>
+
+
+          <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Transfer Call</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div>
+                  <Label>Transfer Type</Label>
+                  <select className="w-full mt-1 p-2 border rounded-md" value={transferType} onChange={(e)=>setTransferType(e.target.value)}>
+                    <option value="blind">Blind Transfer</option>
+                    <option value="warm">Warm Transfer</option>
+                    <option value="conference">Conference</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Transfer To</Label>
+                  <Input 
+                    type="text" 
+                    placeholder="Enter number or extension"
+                    value={transferNumber}
+                    onChange={(e) => setTransferNumber(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsTransferDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleTransfer}>
+                    Transfer
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardContent>
     </Card>

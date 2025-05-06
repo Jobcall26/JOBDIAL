@@ -12,7 +12,7 @@ type Call = {
   contactId: number;
   campaignId: number;
   startTime: string;
-  
+
   // Propriétés du contact
   contactName?: string;
   contactPhone?: string;
@@ -27,7 +27,7 @@ type Call = {
   contactLastCallResult?: string;
   contactCallCount?: number;
   contactNotes?: string;
-  
+
   // Propriétés de la campagne
   campaignName?: string;
 };
@@ -53,7 +53,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<SoftphoneStatus>("disconnected");
   const [error, setError] = useState<string | null>(null);
   const [currentCall, setCurrentCall] = useState<Call | null>(null);
-  
+
   // Effet pour jouer des sons lors des changements de statut
   useEffect(() => {
     if (status === "ready") {
@@ -147,10 +147,10 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
         type: "agent_status",
         data: { status: "available" },
       });
-      
+
       // Jouer le son de fin d'appel
       playSound('callEnded');
-      
+
       // Refresh calls list
       queryClient.invalidateQueries({ queryKey: ["/api/calls"] });
     },
@@ -168,7 +168,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
   // Handler for WebSocket messages related to calls
   if (lastMessage && lastMessage.type === "call_event") {
     const { event, call } = lastMessage.data;
-    
+
     switch (event) {
       case "incoming":
         setStatus("on-call");
@@ -179,13 +179,13 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
           description: `Appel de ${call.contactName}`,
         });
         break;
-      
+
       case "ended":
         setStatus("ready");
         setCurrentCall(null);
         playSound('callEnded');
         break;
-      
+
       default:
         break;
     }
@@ -246,5 +246,9 @@ export function useSoftphone() {
   if (!context) {
     throw new Error("useSoftphone must be used within a SoftphoneProvider");
   }
-  return context;
+  const [dialMode, setDialMode] = useState<"manual" | "auto" | "predictive" | "power">("manual");
+  const [isRecording, setIsRecording] = useState(false);
+  const [callQuality, setCallQuality] = useState<number>(100);
+  const [networkLatency, setNetworkLatency] = useState<number>(0);
+  return {...context, dialMode, setDialMode, isRecording, setIsRecording, callQuality, setCallQuality, networkLatency, setNetworkLatency};
 }
