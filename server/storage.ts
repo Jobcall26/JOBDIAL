@@ -193,7 +193,7 @@ class DatabaseStorage implements IStorage {
     try {
       // Create agent record in database
       // Import hashPassword from auth.ts to ensure passwords are properly hashed
-      const { hashPassword } = require('./auth');
+      const { hashPassword } = await import('./auth');
       
       // Create properly typed agent object
       const agentData: InsertUser = {
