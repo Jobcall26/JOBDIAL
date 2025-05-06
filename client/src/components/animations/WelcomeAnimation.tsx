@@ -165,12 +165,15 @@ export default function WelcomeAnimation() {
   return (
     <motion.div
       ref={scope}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="welcome-animation-container fixed inset-0 z-50 flex items-center justify-center"
       style={{
         background: `radial-gradient(circle at center, rgba(0,0,0,0.9) 0%, rgba(0,0,0,1) 100%)`,
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      onAnimationComplete={() => {
+        document.dispatchEvent(new Event('welcomeAnimationComplete'));
+      }}
     >
       {user.role === 'agent' ? (
         <div className="relative w-full h-full flex items-center justify-center">
