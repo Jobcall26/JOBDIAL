@@ -791,11 +791,16 @@ class DatabaseStorage implements IStorage {
   
   async deleteCampaign(id: number): Promise<void> {
     try {
-      // Delete campaign from database
-      // In a real implementation, this would delete from the database
+      // D'abord, supprimer tous les leads associés à cette campagne
+      await db.delete(leads).where(eq(leads.campaignId, id));
       
-      // For now, just log it
-      console.log(`Campaign ${id} deleted`);
+      // Ensuite, supprimer toutes les affectations agent-campagne
+      await db.delete(agentCampaigns).where(eq(agentCampaigns.campaignId, id));
+      
+      // Finalement, supprimer la campagne elle-même
+      await db.delete(campaigns).where(eq(campaigns.id, id));
+      
+      console.log(`Campaign ${id} deleted with all associated data`);
     } catch (error) {
       console.error("Error in deleteCampaign:", error);
       throw error;

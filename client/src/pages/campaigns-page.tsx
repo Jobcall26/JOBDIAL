@@ -3,7 +3,7 @@ import Layout from "@/components/layout/Layout";
 import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import {
   PlusCircle,
@@ -13,16 +13,20 @@ import {
   Users,
   BarChart4,
   FileText,
+  Trash2,
 } from "lucide-react";
 import StatusBadge from "@/components/common/StatusBadge";
 import Pagination from "@/components/common/Pagination";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import CampaignForm from "@/components/campaigns/CampaignForm";
 import {
@@ -52,11 +56,16 @@ type Campaign = {
 
 export default function CampaignsPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const isAdmin = user?.role === "admin";
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  
+  // État pour la suppression
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
 
   // Fetch campaigns with pagination, search, and filtering
   const { data } = useQuery<{
@@ -71,6 +80,28 @@ export default function CampaignsPage() {
   const totalCampaigns = data?.total || 0;
   const pageSize = data?.limit || 10;
   const totalPages = Math.ceil(totalCampaigns / pageSize);
+  
+  // Mutation pour supprimer une campagne
+  const deleteCampaignMutation = useMutation({
+    mutationFn: async (campaignId: number) => {
+      await apiRequest("DELETE", `/api/campaigns/${campaignId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Campagne supprimée",
+        description: "La campagne a été supprimée avec succès",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +110,17 @@ export default function CampaignsPage() {
 
   const handleAddCampaign = () => {
     setIsDialogOpen(true);
+  };
+  
+  const handleDeleteCampaign = (campaignId: number) => {
+    setSelectedCampaignId(campaignId);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (selectedCampaignId) {
+      deleteCampaignMutation.mutate(selectedCampaignId);
+    }
   };
 
   const getProgressColor = (campaign: Campaign) => {
@@ -185,11 +227,12 @@ export default function CampaignsPage() {
                               </span>
                               <span>{campaign.progress}%</span>
                             </div>
-                            <Progress
-                              value={campaign.progress}
-                              className="h-2"
-                              indicatorClassName={getProgressColor(campaign)}
-                            />
+                            <div className="w-full bg-neutral-200 h-2 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressColor(campaign)}`}
+                                style={{ width: `${campaign.progress}%` }}
+                              />
+                            </div>
                           </div>
                         </td>
                         <td className="px-3 py-3 whitespace-nowrap">
@@ -219,6 +262,9 @@ export default function CampaignsPage() {
                                   ) : campaign.status === "paused" ? (
                                     <DropdownMenuItem>Reprendre</DropdownMenuItem>
                                   ) : null}
+                                  <DropdownMenuItem onClick={() => handleDeleteCampaign(campaign.id)} className="text-[#EF4444]">
+                                    Supprimer
+                                  </DropdownMenuItem>
                                 </>
                               )}
                               <DropdownMenuItem>Rapport</DropdownMenuItem>
@@ -258,6 +304,34 @@ export default function CampaignsPage() {
             <DialogTitle>Créer une campagne</DialogTitle>
           </DialogHeader>
           <CampaignForm onSuccess={() => setIsDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de confirmation de suppression */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible et supprimera également tous les contacts et données associés.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteCampaignMutation.isPending}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteCampaignMutation.isPending}
+            >
+              {deleteCampaignMutation.isPending ? "Suppression..." : "Supprimer"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Layout>
