@@ -1,11 +1,10 @@
 
 import { motion, useAnimate } from 'framer-motion';
-import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 
 export default function WelcomeAnimation() {
   const [scope, animate] = useAnimate();
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       animate(scope.current, { opacity: 0 }, { duration: 0.5 })
@@ -16,10 +15,16 @@ export default function WelcomeAnimation() {
             (element as HTMLElement).style.display = 'none';
           }
         });
-    }, 3500);
+    }, 4500);
     
     return () => clearTimeout(timer);
   }, [animate]);
+
+  const messages = [
+    "Connexion sécurisée établie",
+    "Centre de commande activé",
+    "Système opérationnel"
+  ];
 
   return (
     <motion.div
@@ -38,89 +43,44 @@ export default function WelcomeAnimation() {
           backgroundImage: "linear-gradient(0deg, transparent 24%, #0066cc 25%, #0066cc 26%, transparent 27%, transparent 74%, #0066cc 75%, #0066cc 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, #0066cc 25%, #0066cc 26%, transparent 27%, transparent 74%, #0066cc 75%, #0066cc 76%, transparent 77%, transparent)",
           backgroundSize: '50px 50px'
         }}
-        style={{ 
-          background: '#000',
-        }}
       />
 
-      {/* Particules numériques */}
-      <motion.div className="absolute inset-0">
-        {Array.from({ length: 30 }).map((_, i) => (
+      {/* Séquence de numérotation */}
+      <div className="grid grid-cols-3 gap-6 mb-16">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number, index) => (
           <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-blue-500"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, Math.random() * 100 - 50],
-              opacity: [0, 1, 0],
-              scale: [0, 1, 0],
+            key={number}
+            className="w-16 h-16 flex items-center justify-center bg-blue-500/10 rounded-xl backdrop-blur-sm border border-blue-500/30"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: [0, 1, 1, 0.7],
+              scale: [0.5, 1, 1, 0.95],
+              boxShadow: [
+                "0 0 0 rgba(0,102,204,0)",
+                "0 0 20px rgba(0,102,204,0.5)",
+                "0 0 40px rgba(0,102,204,0.3)",
+                "0 0 10px rgba(0,102,204,0.2)"
+              ]
             }}
             transition={{
-              duration: 2,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: Math.random() * 2,
+              delay: index * 0.15,
+              duration: 0.6,
+              times: [0, 0.3, 0.6, 1],
+              ease: "easeOut"
             }}
-          />
+          >
+            <span className="text-3xl font-bold text-blue-400 text-glow">{number}</span>
+          </motion.div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Séquence de numérotation */}
-      <motion.div 
-        className="absolute inset-0 flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="grid grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number, index) => (
-            <motion.div
-              key={number}
-              className="w-12 h-12 flex items-center justify-center bg-blue-500/20 rounded-lg text-2xl font-bold text-blue-500"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                delay: index * 0.1,
-                duration: 0.3,
-                type: "spring",
-                stiffness: 200
-              }}
-            >
-              {number}
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Message principal */}
-      <div className="relative z-10 text-center">
+      {/* Messages système */}
+      <div className="relative z-10 text-center space-y-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-4xl md:text-6xl font-bold mb-4 text-white tracking-wider"
-        >
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.3 }}
-          >
-            Bienvenue sur
-          </motion.span>
-        </motion.div>
-
-        <motion.div
-          className="text-5xl md:text-7xl font-bold text-blue-500 mb-6"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ 
-            delay: 1.5,
-            type: "spring",
-            stiffness: 200
-          }}
+          transition={{ delay: 2, duration: 0.5 }}
+          className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-wider"
         >
           <motion.span
             animate={{
@@ -136,20 +96,45 @@ export default function WelcomeAnimation() {
               repeatType: "reverse"
             }}
           >
-            JOBDIAL
+            Bienvenue sur JOBDIAL
           </motion.span>
+        </motion.div>
+
+        {messages.map((message, index) => (
+          <motion.div
+            key={message}
+            className="text-xl text-blue-300"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 2.5 + (index * 0.3),
+              duration: 0.3
+            }}
+          >
+            {message}
+          </motion.div>
+        ))}
+
+        <motion.div
+          className="mt-8 text-neutral-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 3.8 }}
+        >
+          Aucune campagne active - Créez votre première mission
         </motion.div>
       </div>
 
-      {/* Scanner effect */}
+      {/* Effet de scan */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
         initial={{ y: "-100%" }}
         animate={{ y: "100%" }}
         transition={{
           duration: 2,
-          delay: 0.5,
-          ease: "linear"
+          ease: "linear",
+          repeat: Infinity,
+          repeatType: "loop"
         }}
       />
     </motion.div>
