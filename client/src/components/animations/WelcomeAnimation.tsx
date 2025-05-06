@@ -68,6 +68,33 @@ export default function WelcomeAnimation() {
         ))}
       </motion.div>
 
+      {/* Séquence de numérotation */}
+      <motion.div 
+        className="absolute inset-0 flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="grid grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number, index) => (
+            <motion.div
+              key={number}
+              className="w-12 h-12 flex items-center justify-center bg-blue-500/20 rounded-lg text-2xl font-bold text-blue-500"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                delay: index * 0.1,
+                duration: 0.3,
+                type: "spring",
+                stiffness: 200
+              }}
+            >
+              {number}
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Message principal */}
       <div className="relative z-10 text-center">
         <motion.div
