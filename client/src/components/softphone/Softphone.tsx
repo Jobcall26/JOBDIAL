@@ -135,7 +135,7 @@ export default function Softphone() {
           <Button
             onClick={() => handleStatusChange("available")}
             disabled={isConnecting}
-            className="bg-[#10B981] hover:bg-[#0D9668]"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
           >
             {isConnecting ? (
               <>
@@ -205,7 +205,7 @@ export default function Softphone() {
           <div className="flex flex-col md:flex-row gap-6">
             {/* Informations Client */}
             <div className="w-full md:w-1/3">
-              <Card className="bg-neutral-lightest border-blue-200">
+              <Card className="bg-white shadow-lg border-blue-200 hover:border-blue-300 transition-all">
                 <CardHeader className="pb-2 border-b bg-blue-50">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ export default function Softphone() {
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
         <CardTitle className="text-lg font-semibold">Softphone</CardTitle>
         <div className="flex space-x-2">
